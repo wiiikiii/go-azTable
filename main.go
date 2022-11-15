@@ -8,9 +8,28 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"golang.org/x/exp/slices"
 )
 
 var tableName string = "CorpA"
+
+landingZoneStages := []string{
+	"structure",
+	"connectivity_er",
+	"connectivity_ipsec",
+	"identity",
+	"managementmonitoring",
+	"azuread",
+	"variables"
+}
+
+var workPlaceStages := []string{
+	"landingzone",
+	"structure",
+	"network",
+	"infrastructure_avd",
+	"sessionhosts"
+}
 
 func main() {
 	accountName, ok := os.LookupEnv("TABLES_STORAGE_ACCOUNT_NAME")
