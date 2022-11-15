@@ -8,30 +8,17 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
-	"golang.org/x/exp/slices"
 )
 
 var tableName string = "CorpA"
-
-landingZoneStages := []string{
-	"structure",
-	"connectivity_er",
-	"connectivity_ipsec",
-	"identity",
-	"managementmonitoring",
-	"azuread",
-	"variables"
-}
-
-var workPlaceStages := []string{
-	"landingzone",
-	"structure",
-	"network",
-	"infrastructure_avd",
-	"sessionhosts"
-}
+var partitionKey string = "AVD"
+var rowKey string = "Input"
 
 func main() {
+
+	lzStages := [...]string{"structure", "connectivity_er", "connectivity_ipsec", "identity", "managementmonitoring", "azuread", "variables"}
+	wpStages := [...]string{"landingzone", "structure", "network", "infrastructure_avd", "sessionhosts"}
+
 	accountName, ok := os.LookupEnv("TABLES_STORAGE_ACCOUNT_NAME")
 	if !ok {
 		panic(" TABLES_STORAGE_ACCOUNT_NAME could not be found")
@@ -52,7 +39,12 @@ func main() {
 	}
 	fmt.Println(client)
 
-    filter := "PartitionKey eq 'AVD' or RowKey eq 'DeploymentOut'"
+	GetEntityData(client, partitionKey, rowKey)
+
+}
+
+func GetEntityData(client *aztables.Client, partitionKey string, rowKey string ) (string, string, string, []string){
+	filter := "PartitionKey eq 'AVD' or RowKey eq 'DeploymentOut'"
     options := &aztables.ListEntitiesOptions{
         Filter: &filter,
         Select: to.Ptr("RowKey,ADDCGuid,ADDSName,AVDGroupID,ApplicationsToInstall"),
@@ -76,7 +68,7 @@ func main() {
                 panic(err)
             }
 
-            fmt.Printf("Received: %v, %v, %v, %v\n", myEntity.RowKey, myEntity.Properties["ADDCGuid"], myEntity.Properties["ADDSName"], myEntity.Properties["AVDGroupID"], myEntity.Properties["ApplicationsToInstall"])
+            //fmt.Printf("Received: %v, %v, %v, %v\n", myEntity.RowKey, myEntity.Properties["ADDCGuid"], myEntity.Properties["ADDSName"], myEntity.Properties["AVDGroupID"], myEntity.Properties["ApplicationsToInstall"])
         }
     }
 }
