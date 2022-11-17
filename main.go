@@ -4,20 +4,34 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
 
-var tableName string = "CorpA"
-var partitionKey string = "AVD"
-var rowKey string = "Input"
+type ListEntitiesOptions struct {
+	Filter           *string
+	Select           *string
+	Top              int32
+	NextPartitionKey *string
+	NextRowKey       *string
+}
+
+type ExportStruct struct {
+	Name  string `json:"Name"`
+	Value string `json:"Value"`
+}
 
 func main() {
 
-	lzStages := [...]string{"structure", "connectivity_er", "connectivity_ipsec", "identity", "managementmonitoring", "azuread", "variables"}
-	wpStages := [...]string{"landingzone", "structure", "network", "infrastructure_avd", "sessionhosts"}
+	partitionKey := os.Args[1]
+	rowKey := os.Args[2]
+	tableName := os.Args[3]
+
+	//var exportObject = []string{}
 
 	accountName, ok := os.LookupEnv("TABLES_STORAGE_ACCOUNT_NAME")
 	if !ok {
@@ -27,6 +41,7 @@ func main() {
 	if !ok {
 		panic(" TABLES_PRIMARY_STORAGE_ACCOUNT_KEY could not be found")
 	}
+
 	serviceURL := fmt.Sprintf("https://%s.table.core.windows.net/%s", accountName, tableName)
 
 	cred, err := aztables.NewSharedKeyCredential(accountName, accountKey)
@@ -37,38 +52,41 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(client)
 
-	GetEntityData(client, partitionKey, rowKey)
+	filter := fmt.Sprintf("PartitionKey eq '%s' or RowKey eq '%s'", partitionKey, rowKey)
+	options := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+		Top:    to.Ptr(int32(15)),
+	}
 
-}
+	pager := client.NewListEntitiesPager(options)
+	pageCount := 0
 
-func GetEntityData(client *aztables.Client, partitionKey string, rowKey string ) (string, string, string, []string){
-	filter := "PartitionKey eq 'AVD' or RowKey eq 'DeploymentOut'"
-    options := &aztables.ListEntitiesOptions{
-        Filter: &filter,
-        Select: to.Ptr("RowKey,ADDCGuid,ADDSName,AVDGroupID,ApplicationsToInstall"),
-        Top: to.Ptr(int32(15)),
-    }
+	for pager.More() {
+		response, err := pager.NextPage(context.TODO())
+		if err != nil {
+			panic(err)
+		}
+		pageCount += 1
 
-    pager := client.NewListEntitiesPager(options)
-    pageCount := 0
-    for pager.More() {
-        response, err := pager.NextPage(context.TODO())
-        if err != nil {
-            panic(err)
-        }
-        fmt.Printf("There are %d entities in page #%d\n", len(response.Entities), pageCount)
-        pageCount += 1
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				panic(err)
+			}
 
-        for _, entity := range response.Entities {
-            var myEntity aztables.EDMEntity
-            err = json.Unmarshal(entity, &myEntity)
-            if err != nil {
-                panic(err)
-            }
+			jsonStr, err := json.Marshal(myEntity.Properties)
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			} else {
+				fmt.Println(string(jsonStr))
+			}
 
-            //fmt.Printf("Received: %v, %v, %v, %v\n", myEntity.RowKey, myEntity.Properties["ADDCGuid"], myEntity.Properties["ADDSName"], myEntity.Properties["AVDGroupID"], myEntity.Properties["ApplicationsToInstall"])
-        }
-    }
+			err = ioutil.WriteFile("data.json", jsonStr, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
