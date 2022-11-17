@@ -31,8 +31,6 @@ func main() {
 	rowKey := os.Args[2]
 	tableName := os.Args[3]
 
-	//var exportObject = []string{}
-
 	accountName, ok := os.LookupEnv("TABLES_STORAGE_ACCOUNT_NAME")
 	if !ok {
 		panic(" TABLES_STORAGE_ACCOUNT_NAME could not be found")
