@@ -1,4 +1,4 @@
-package getTableData
+package manipulateTableData
 
 import (
 	"context"
@@ -85,4 +85,19 @@ func GetTableData(partitionKey string, rowKey string, tableName string) string {
 		return Export
 	}
 	return Export
+}
+
+func WriteTableData(partitionKey string, rowKey string, tableName string){
+}
+
+func UpdateTableData(partitionKey string, rowKey string, tableName string){
+}
+
+func UpdateTableProperties(partitionKey string, rowKey string, tableName string){
+}
+
+func DeleteTableProperties(partitionKey string, rowKey string, tableName string){
+}
+
+func WriteTableProperties(partitionKey string, rowKey string, tableName string){
 }

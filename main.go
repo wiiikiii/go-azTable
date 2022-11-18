@@ -1,7 +1,7 @@
 package main
 
 import (
-	getTableData "go-table/pkg"
+	manipulateTableData "go-table/pkg"
 	"os"
 )
 
@@ -10,5 +10,5 @@ func main(){
 	rowKey := os.Args[2]
 	tableName := os.Args[3]
 
-	getTableData.GetTableData(partitionKey, rowKey, tableName)
+	manipulateTableData.GetTableData(partitionKey, rowKey, tableName)
 }
