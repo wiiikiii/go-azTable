@@ -7,13 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
 
-func ConnectStorageAccount(tableName string) (cl *aztables.Client, err error){
+func ConnectStorageAccount(tableName string) (cl *aztables.Client, err error) {
 
 	accountName, ok := os.LookupEnv("TABLES_STORAGE_ACCOUNT_NAME")
 	if !ok {
@@ -93,26 +92,26 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 	return Export
 }
 
-func WriteTableData(partitionKey string, rowKey string, tableName string){
+func WriteTableData(partitionKey string, rowKey string, tableName string) {
 }
 
-func UpdateTableData(partitionKey string, rowKey string, tableName string){
+func UpdateTableData(partitionKey string, rowKey string, tableName string) {
 }
 
-func UpdateTableProperties(client *aztables.Client,partitionKey string, rowKey string, tableName string){
+func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string) {
 }
 
-func DeleteTableProperties(partitionKey string, rowKey string, tableName string){
+func DeleteTableProperties(partitionKey string, rowKey string, tableName string) {
 }
 
-func WriteTableProperties(client *aztables.Client,partitionKey string, rowKey string, tableName string){
+func WriteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string) {
 
 	type InventoryEntity struct {
-	aztables.Entity
-	Price       float32
-	Inventory   int32
-	ProductName string
-	OnSale      bool
+		aztables.Entity
+		Price       float32
+		Inventory   int32
+		ProductName string
+		OnSale      bool
 	}
 
 	//TODO: Check access policy, Storage Blob Data Contributor role needed
@@ -144,7 +143,7 @@ func WriteTableProperties(client *aztables.Client,partitionKey string, rowKey st
 
 }
 
-func GetSingleTableValue(client *aztables.Client,partitionKey string, rowKey string, tableName string, valueToQuery string) string{
+func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, valueToQuery string) string {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s' or RowKey eq '%s'", partitionKey, rowKey)
 	options := &aztables.ListEntitiesOptions{
@@ -154,47 +153,40 @@ func GetSingleTableValue(client *aztables.Client,partitionKey string, rowKey str
 
 	pager := client.NewListEntitiesPager(options)
 	pageCount := 0
-	var Export string
+
+	var export string
 
 	for pager.More() {
-	response, err := pager.NextPage(context.TODO())
-	if err != nil {
-		fmt.Printf(err.Error())
-		panic(err)
-	}
-	pageCount += 1
-
-	for _, entity := range response.Entities {
-		var myEntity aztables.EDMEntity
-		err = json.Unmarshal(entity, &myEntity)
+		response, err := pager.NextPage(context.TODO())
 		if err != nil {
 			fmt.Printf(err.Error())
 			panic(err)
 		}
-		for _, entityName := range myEntity.Properties{
-			fmt.Printf("%v", entityName)
-			if strings.Contains(entityName.(string), valueToQuery){
-				fmt.Printf("%v", entityName )
+		pageCount += 1
 
-				jsonStr, err := json.Marshal(entityName)
-				if err != nil {
-					fmt.Printf("Error: %s", err.Error())
-				} else {
-					fmt.Println(string(jsonStr))
-				}
-
-				err = ioutil.WriteFile("data.json", jsonStr, 0644)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				Export := fmt.Sprintln(string(jsonStr))
-				return Export
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				fmt.Printf(err.Error())
+				panic(err)
 			}
+
+			jsonStr, err := json.Marshal(myEntity.Properties[valueToQuery])
+						if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			} else {
+				fmt.Println(string(jsonStr))
+			}
+
+			err = ioutil.WriteFile("data.json", jsonStr, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			Export := fmt.Sprintln(string(jsonStr))
 			return Export
-			}
-		return Export
 		}
 	}
-	return Export
+	return export
 }

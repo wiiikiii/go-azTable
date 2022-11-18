@@ -13,13 +13,13 @@ func main(){
 	tableName := os.Args[3]
 	var client *aztables.Client
 
-	//value := "FRONT_ApplicationsToInstall"
+	valueToQuery := "FRONT_ApplicationsToInstall"
 
 	client, err := manipulateTableData.ConnectStorageAccount(tableName)
 	if(err != nil){
 		panic(err)
 	}
 
-	manipulateTableData.GetTableData(client, partitionKey, rowKey, tableName)
-	//manipulateTableData.GetSingleTableValue(client, partitionKey, rowKey, tableName, value)
+	//manipulateTableData.GetTableData(client, partitionKey, rowKey, tableName)
+	manipulateTableData.GetSingleTableValue(client, partitionKey, rowKey, tableName, valueToQuery)
 }
