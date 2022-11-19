@@ -37,15 +37,15 @@ func ConnectStorageAccount(tableName string) (cl *aztables.Client, err error) {
 	return client, err
 }
 
-func GetTableData(client *aztables.Client, partitionKey string, rowKey string, tableName string) string {
+func GetTableData(client *aztables.Client, partitionKey string, rowKey string, tableName string) *string {
 
-	type ListEntitiesOptions struct {
-		Filter           *string
-		Select           *string
-		Top              int32
-		NextPartitionKey *string
-		NextRowKey       *string
-	}
+	// type ListEntitiesOptions struct {
+	// 	Filter           *string
+	// 	Select           *string
+	// 	Top              int32
+	// 	NextPartitionKey *string
+	// 	NextRowKey       *string
+	// }
 
 	filter := fmt.Sprintf("PartitionKey eq '%s' or RowKey eq '%s'", partitionKey, rowKey)
 	options := &aztables.ListEntitiesOptions{
@@ -84,12 +84,10 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 				log.Fatal(err)
 			}
 
-			Export := fmt.Sprintln(string(jsonStr))
-			return Export
+			Export = fmt.Sprintln(string(jsonStr))
 		}
-		return Export
 	}
-	return Export
+	return &Export
 }
 
 func WriteTableData(partitionKey string, rowKey string, tableName string) {
@@ -143,7 +141,7 @@ func WriteTableProperties(client *aztables.Client, partitionKey string, rowKey s
 
 }
 
-func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, valueToQuery string) string {
+func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, valueToQuery string) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s' or RowKey eq '%s'", partitionKey, rowKey)
 	options := &aztables.ListEntitiesOptions{
@@ -153,8 +151,6 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 
 	pager := client.NewListEntitiesPager(options)
 	pageCount := 0
-
-	var export string
 
 	for pager.More() {
 		response, err := pager.NextPage(context.TODO())
@@ -172,21 +168,26 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 				panic(err)
 			}
 
-			jsonStr, err := json.Marshal(myEntity.Properties[valueToQuery])
-						if err != nil {
-				fmt.Printf("Error: %s", err.Error())
-			} else {
-				fmt.Println(string(jsonStr))
-			}
-
-			err = ioutil.WriteFile("data.json", jsonStr, 0644)
+			//jsonStr, err := json.Marshal(myEntity.Properties[valueToQuery])
+			//test := fmt.Sprintf("%s", myEntity.Properties[valueToQuery])
 			if err != nil {
-				log.Fatal(err)
-			}
 
-			Export := fmt.Sprintln(string(jsonStr))
-			return Export
+				fmt.Printf("Error: %s", err.Error())
+
+			} else {
+
+				//export := fmt.Sprintln(string(jsonStr))
+				//m := Export{valueToQuery, test}
+				//b, err := json.Marshal(valueToQuery, test)
+
+				if err != nil {
+					panic(err)
+				}
+
+				//fmt.Print(b)
+				break
+
+			}
 		}
 	}
-	return export
 }
