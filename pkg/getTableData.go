@@ -56,7 +56,7 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 	pager := client.NewListEntitiesPager(options)
 	pageCount := 0
 
-	var Export string
+	var export string
 
 	for pager.More() {
 		response, err := pager.NextPage(context.TODO())
@@ -84,10 +84,10 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 				log.Fatal(err)
 			}
 
-			Export = fmt.Sprintln(string(jsonStr))
+			export = fmt.Sprintln(string(jsonStr))
 		}
 	}
-	return &Export
+	return &export
 }
 
 func WriteTableData(partitionKey string, rowKey string, tableName string) {
