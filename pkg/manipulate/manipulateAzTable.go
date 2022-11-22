@@ -58,6 +58,64 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 	return &export
 }
 
+func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, valueToQuery string) *string {
+
+	type ExportStruct struct {
+		Name  string `json:"Key"`
+		Value string `json:"Value"`
+	}
+
+	filter := fmt.Sprintf("PartitionKey eq '%s'", partitionKey)
+	options := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+		Top:    to.Ptr(int32(500)),
+	}
+
+	pager := client.NewListEntitiesPager(options)
+	pageCount := 0
+
+	var export string
+
+	for pager.More() {
+		response, err := pager.NextPage(context.TODO())
+		if err != nil {
+			panic(err)
+		}
+		pageCount += 1
+
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				panic(err)
+			}
+
+			if myEntity.RowKey == rowKey {
+
+				for k, v := range myEntity.Properties {
+					if k == valueToQuery {
+
+						jsonStr, err := json.Marshal(ExportStruct{k, v.(string)})
+
+						if err != nil {
+							fmt.Printf("Error: %s", err.Error())
+						} else {
+							fmt.Println(string(jsonStr))
+						}
+
+						err = ioutil.WriteFile("data.json", jsonStr, 0644)
+						if err != nil {
+							log.Fatal(err)
+						}
+						export = fmt.Sprintln(string(jsonStr))
+					}
+				}
+			}
+		}
+	}
+	return &export
+}
+
 func WriteTableData(partitionKey string, rowKey string, tableName string) {
 }
 
@@ -109,80 +167,5 @@ func WriteTableProperties(client *aztables.Client, partitionKey string, rowKey s
 
 }
 
-func ListEntities(client *aztables.Client) {
-	listPager := client.NewListEntitiesPager(nil)
-	pageCount := 0
-	for listPager.More() {
-		response, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("There are %d entities in page #%d\n", len(response.Entities), pageCount)
-		fmt.Printf("%v", response.Entities)
-		pageCount += 1
-	}
-}
 
-// func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, valueToQuery string) {
 
-// 	type GetEntityOptions struct {
-// 		Filter           *string
-// 		Select           *string
-// 		Top              int32
-// 		NextPartitionKey *string
-// 		NextRowKey       *string
-// 	}
-
-// 	filter := fmt.Sprintf("PartitionKey eq '%s' or RowKey eq '%s'", partitionKey, rowKey)
-// 	options := &aztables.GetEntityOptions{
-// 		Filter: &filter,
-// 		Select: &valueToQuery,
-// 		Top:    to.Ptr(int32(15)),
-// 	}
-
-// 	pager, err := client.GetEntity(context.Background(), partitionKey, rowKey, *options)
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 		panic(err)
-// 	}
-// 	pageCount := 0
-
-// 	for pager.More() {
-// 		response, err := pager.NextPage(context.TODO())
-// 		if err != nil {
-// 			fmt.Println(err.Error())
-// 			panic(err)
-// 		}
-// 		pageCount += 1
-
-// 		for _, entity := range response.Entities {
-// 			var myEntity aztables.EDMEntity
-// 			err = json.Unmarshal(entity, &myEntity)
-// 			if err != nil {
-// 				fmt.Println(err.Error())
-// 				panic(err)
-// 			}
-
-// 			//jsonStr, err := json.Marshal(myEntity.Properties[valueToQuery])
-// 			//test := fmt.Sprintf("%s", myEntity.Properties[valueToQuery])
-// 			if err != nil {
-
-// 				fmt.Printf("Error: %s", err.Error())
-
-// 			} else {
-
-// 				//export := fmt.Sprintln(string(jsonStr))
-// 				//m := Export{valueToQuery, test}
-// 				//b, err := json.Marshal(valueToQuery, test)
-
-// 				if err != nil {
-// 					panic(err)
-// 				}
-
-// 				//fmt.Print(b)
-// 				break
-
-// 			}
-// 		}
-// 	}
-// }

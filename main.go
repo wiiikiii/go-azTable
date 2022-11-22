@@ -21,6 +21,7 @@ func main() {
 	partitionKey := args[0]
 	rowKey := args[1]
 	tableName := args[2]
+	valueToQuery := args[3]
 	var client *aztables.Client
 
 	connectAzStorage.ConnectStorageAccount(tableName)
@@ -30,8 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
-
-	//fmt.Println(export)
+	//manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
+	manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, valueToQuery)
 
 }
