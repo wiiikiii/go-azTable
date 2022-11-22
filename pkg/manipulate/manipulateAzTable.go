@@ -8,12 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
 
-func GetTableData(client *aztables.Client, partitionKey string, rowKey string, tableName string) *string {
+func GetTableData(client *aztables.Client, partitionKey string, rowKey string, tableName string) (string, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", partitionKey)
 	options := &aztables.ListEntitiesOptions{
@@ -45,19 +44,18 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 				jsonStr, err := json.Marshal(myEntity.Properties)
 				if err != nil {
 					fmt.Printf("Error: %s", err.Error())
-				} else {
-					fmt.Println(string(jsonStr))
 				}
 
 				err = ioutil.WriteFile("data.json", jsonStr, 0644)
 				if err != nil {
 					log.Fatal(err)
 				}
+
 				export = fmt.Sprintln(string(jsonStr))
 			}
 		}
 	}
-	return &export
+	return export, nil
 }
 
 func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, tableProperty string) *string {
@@ -121,7 +119,6 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 
 func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string, propertyValue string) (string, error) {
 
-	// Inserting an entity with int64s, binary, datetime, or guid types
 	myAddEntity := aztables.EDMEntity{
 		Entity: aztables.Entity{
 			PartitionKey: partitionKey,
@@ -150,25 +147,31 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 	return r, nil
 }
 
-func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) (string, error) {
+func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) (error) {
 
-	var s string
-	e := azcore.ETag(propertyName)
-	etag := azcore.ETagAny.Equals(e)
-
-	if etag {
-		_, err := client.DeleteEntity(context.TODO(), partitionKey, rowKey, &aztables.DeleteEntityOptions{IfMatch: &e,})
-		fmt.Println(etag)
-		if err != nil {
-			return "", err
-			//"", errors.New("couldnt delete property")
-		}
-		s = fmt.Sprintf("deleted: %q", propertyName)
-	} else {
-		fmt.Printf("Value %v not found in Etags", propertyName)
+	updateEntityOptions := aztables.UpdateEntityOptions{
+		UpdateMode: "replace",
 	}
-	return s, nil
+
+	var res string
+	res, _ = GetTableData(client, partitionKey, rowKey, tableName)
+
+	var jsonMap map[string]interface{}
+	json.Unmarshal([]byte(res), &jsonMap)
+
+	delete(jsonMap, propertyName)
+
+	marshalled, err := json.Marshal(res)
+	if err != nil {
+		return errors.New("couldnt convert to json")
+	}
+
+	_, err = client.UpdateEntity(context.TODO(), marshalled, &updateEntityOptions)
+	if err != nil {
+		return errors.New("couldnt update or create value")
+	}
+
+	return nil
 }
 
 
-// &aztables.DeleteEntityOptions{IfMatch: &e}
