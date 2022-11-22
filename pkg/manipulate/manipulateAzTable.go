@@ -3,10 +3,12 @@ package manipulateAzTable
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
@@ -117,7 +119,7 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 	return &export
 }
 
-func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string, propertyValue string) bool {
+func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string, propertyValue string) (string, error) {
 
 	// Inserting an entity with int64s, binary, datetime, or guid types
 	myAddEntity := aztables.EDMEntity{
@@ -130,21 +132,43 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 		},
 	}
 
-	upsertEntityOptions := aztables.UpsertEntityOptions {
-		UpdateMode : "merge",
+	upsertEntityOptions := aztables.UpsertEntityOptions{
+		UpdateMode: "merge",
 	}
 
 	marshalled, err := json.Marshal(myAddEntity)
 	if err != nil {
-		panic(err)
+		return "", errors.New("couldnt convert to json")
 	}
 
 	_, err = client.UpsertEntity(context.TODO(), marshalled, &upsertEntityOptions)
 	if err != nil {
-		panic(err)
+		return "", errors.New("couldnt update or create value")
 	}
-	return true
+
+	r := fmt.Sprintf("%q : %q", propertyName, propertyValue)
+	return r, nil
 }
 
-func DeleteTableProperties(partitionKey string, rowKey string, tableName string) {
+func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) (string, error) {
+
+	var s string
+	e := azcore.ETag(propertyName)
+	etag := azcore.ETagAny.Equals(e)
+
+	if etag {
+		_, err := client.DeleteEntity(context.TODO(), partitionKey, rowKey, &aztables.DeleteEntityOptions{IfMatch: &e,})
+		fmt.Println(etag)
+		if err != nil {
+			return "", err
+			//"", errors.New("couldnt delete property")
+		}
+		s = fmt.Sprintf("deleted: %q", propertyName)
+	} else {
+		fmt.Printf("Value %v not found in Etags", propertyName)
+	}
+	return s, nil
 }
+
+
+// &aztables.DeleteEntityOptions{IfMatch: &e}

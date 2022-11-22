@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	connectAzStorage "go-table/pkg/connect"
@@ -22,7 +23,7 @@ func main() {
 	rowKey := args[1]
 	tableName := args[2]
 	propertyName := args[3]
-	propertyValue := args[4]
+	//propertyValue := args[4]
 	var client *aztables.Client
 
 	connectAzStorage.ConnectStorageAccount(tableName)
@@ -33,7 +34,21 @@ func main() {
 	}
 
 	//manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
+
+
 	//manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, valueToQuery)
-	manipulateAzTable.UpdateTableProperties(client, partitionKey, rowKey, tableName, propertyName, propertyValue)
+
+
+	// r, err  := manipulateAzTable.UpdateTableProperties(client, partitionKey, rowKey, tableName, propertyName, propertyValue)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(r)
+
+	r, err  := manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName )
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(r)
 
 }
