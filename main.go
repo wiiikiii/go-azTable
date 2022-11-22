@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
-	manipulateTableData "go-table/pkg"
 	"os"
+
+	connectAzStorage "go-table/pkg/connect"
+	manipulateAzTable "go-table/pkg/manipulate"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
@@ -13,21 +14,24 @@ type ExportStruct struct {
 	Value string `json:"Value"`
 }
 
-func main(){
-	partitionKey := os.Args[1]
-	rowKey := os.Args[2]
-	tableName := os.Args[3]
+func main() {
+
+	var args = os.Args[1:]
+
+	partitionKey := args[0]
+	rowKey := args[1]
+	tableName := args[2]
 	var client *aztables.Client
 
-	//valueToQuery := "FRONT_ApplicationsToInstall"
+	connectAzStorage.ConnectStorageAccount(tableName)
 
-	client, err := manipulateTableData.ConnectStorageAccount(tableName)
-	if(err != nil){
+	client, err := connectAzStorage.ConnectStorageAccount(tableName)
+	if err != nil {
 		panic(err)
 	}
 
-	export := manipulateTableData.GetTableData(client, partitionKey, rowKey, tableName)
-	//manipulateTableData.GetSingleTableValue(client, partitionKey, rowKey, tableName, valueToQuery)
+	manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
 
-	fmt.Println(export)
+	//fmt.Println(export)
+
 }
