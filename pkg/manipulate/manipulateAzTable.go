@@ -116,56 +116,13 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 	return &export
 }
 
-func WriteTableData(partitionKey string, rowKey string, tableName string) {
-}
-
-func UpdateTableData(partitionKey string, rowKey string, tableName string) {
-}
-
 func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string) {
 }
 
 func DeleteTableProperties(partitionKey string, rowKey string, tableName string) {
 }
 
-func WriteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string) {
 
-	type InventoryEntity struct {
-		aztables.Entity
-		Price       float32
-		Inventory   int32
-		ProductName string
-		OnSale      bool
-	}
-
-	//TODO: Check access policy, Storage Blob Data Contributor role needed
-	_, err := client.CreateTable(context.TODO(), nil)
-	if err != nil {
-		panic(err)
-	}
-
-	myEntity := InventoryEntity{
-		Entity: aztables.Entity{
-			PartitionKey: partitionKey,
-			RowKey:       rowKey,
-		},
-		Price:       3.99,
-		Inventory:   20,
-		ProductName: "Markers",
-		OnSale:      false,
-	}
-
-	marshalled, err := json.Marshal(myEntity)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = client.AddEntity(context.TODO(), marshalled, nil) // TODO: Check access policy, need Storage Table Data Contributor role
-	if err != nil {
-		panic(err)
-	}
-
-}
 
 
 
