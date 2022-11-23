@@ -58,12 +58,7 @@ func GetTableData(client *aztables.Client, partitionKey string, rowKey string, t
 	return export, nil
 }
 
-func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, tableProperty string) *string {
-
-	// type ExportStruct struct {
-	// 	Name  string `json:"Key"`
-	// 	Value string `json:"Value"`
-	// }
+func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey string, tableName string, tableProperty string) (string, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", partitionKey)
 	options := &aztables.ListEntitiesOptions{
@@ -95,18 +90,12 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 				for k, v := range myEntity.Properties {
 					if k == tableProperty {
 
-						//jsonStr, err := json.Marshal(ExportStruct{k, v.(string)})
-						jsonStr, err := json.Marshal(v.(string))
+						r := make(map[string]string)
+						r[k] = v.(string)
 
+						jsonStr, err := json.Marshal(r)
 						if err != nil {
 							fmt.Printf("Error: %s", err.Error())
-						} else {
-							fmt.Println(string(jsonStr))
-						}
-
-						err = ioutil.WriteFile("data.json", jsonStr, 0644)
-						if err != nil {
-							log.Fatal(err)
 						}
 						export = fmt.Sprintln(string(jsonStr))
 					}
@@ -114,7 +103,7 @@ func GetSingleTableValue(client *aztables.Client, partitionKey string, rowKey st
 			}
 		}
 	}
-	return &export
+	return export, nil
 }
 
 func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string, propertyValue string) (string, error) {
@@ -143,11 +132,19 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 		return "", errors.New("couldnt update or create value")
 	}
 
-	r := fmt.Sprintf("%q : %q", propertyName, propertyValue)
-	return r, nil
+	var export string
+	r := make(map[string]string)
+	r[propertyName] = propertyValue
+	jsonStr, err := json.Marshal(r)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	}
+	export = fmt.Sprintln(string(jsonStr))
+
+	return export, nil
 }
 
-func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) (error) {
+func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) error {
 
 	updateEntityOptions := aztables.UpdateEntityOptions{
 		UpdateMode: "replace",
@@ -173,5 +170,3 @@ func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey 
 
 	return nil
 }
-
-
