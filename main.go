@@ -6,7 +6,10 @@ import (
 	connectAzStorage "go-table/pkg/connect"
 	manipulateAzTable "go-table/pkg/manipulate"
 
+	// routes "go-table/routes"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	// "github.com/gorilla/mux"
 )
 
 type ExportStruct struct {
@@ -24,6 +27,12 @@ func main() {
 	propertyName := args[3]
 	// propertyValue := args[4]
 	var client *aztables.Client
+
+	// r := mux.NewRouter()
+	// routes.RegisterTableRoutes(r)
+	// http.Handle("/", r)
+	// log.Fatal(http.ListenAndServe("localhost:9010", r))
+
 
 	connectAzStorage.ConnectStorageAccount(tableName)
 
