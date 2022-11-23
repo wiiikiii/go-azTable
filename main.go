@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	connectAzStorage "go-table/pkg/connect"
@@ -23,6 +25,14 @@ func main() {
 	partitionKey := args[1]
 	rowKey := args[2]
 	tableName := args[3]
+
+	listenAddr := ":8080"
+	if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
+		listenAddr = ":" + val
+	}
+	http.HandleFunc("/api/HttpExample", helper.HelloHandler)
+	log.Printf("About to listen on %s. Go to https://127.0.0.1%s/", listenAddr, listenAddr)
+	log.Fatal(http.ListenAndServe(listenAddr, nil))
 
 	valid := true
 	for _, k := range args {
