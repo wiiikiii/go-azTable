@@ -1,15 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	connectAzStorage "go-table/pkg/connect"
 	manipulateAzTable "go-table/pkg/manipulate"
 
-	// routes "go-table/routes"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
-	// "github.com/gorilla/mux"
 )
 
 type ExportStruct struct {
@@ -24,14 +22,9 @@ func main() {
 	partitionKey := args[0]
 	rowKey := args[1]
 	tableName := args[2]
-	propertyName := args[3]
+	// propertyName := args[3]
 	// propertyValue := args[4]
 	var client *aztables.Client
-
-	// r := mux.NewRouter()
-	// routes.RegisterTableRoutes(r)
-	// http.Handle("/", r)
-	// log.Fatal(http.ListenAndServe("localhost:9010", r))
 
 
 	connectAzStorage.ConnectStorageAccount(tableName)
@@ -41,12 +34,12 @@ func main() {
 		panic(err)
 	}
 
-	// var res string
-	// res, err = manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(res)
+	var res string
+	res, err = manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
 
 	//manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, valueToQuery)
 
@@ -56,8 +49,8 @@ func main() {
 	// }
 	// fmt.Println(r)
 
-	manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName)
-	if err != nil {
-		panic(err)
-	}
+	// manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName)
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
