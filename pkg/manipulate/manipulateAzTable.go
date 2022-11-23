@@ -144,7 +144,7 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 	return export, nil
 }
 
-func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) error {
+func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey string, tableName string, propertyName string) (string, error) {
 
 	updateEntityOptions := aztables.UpdateEntityOptions{
 		UpdateMode: "replace",
@@ -160,13 +160,23 @@ func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey 
 
 	marshalled, err := json.Marshal(res)
 	if err != nil {
-		return errors.New("couldnt convert to json")
+		return "", errors.New("couldnt convert to json")
 	}
 
 	_, err = client.UpdateEntity(context.TODO(), marshalled, &updateEntityOptions)
 	if err != nil {
-		return errors.New("couldnt update or create value")
+		return "", errors.New("couldnt update or create value")
+	}
+	var export string
+
+	r := make(map[string]string)
+	r[propertyName] = "success"
+
+	jsonStr, err := json.Marshal(r)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
 	}
 
-	return nil
+	export = fmt.Sprintln(string(jsonStr))
+	return export, nil
 }
