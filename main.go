@@ -96,6 +96,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
+				return 
 			}
 
 		case function == "single":
