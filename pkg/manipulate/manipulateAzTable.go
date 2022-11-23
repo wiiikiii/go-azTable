@@ -133,14 +133,16 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 	}
 
 	var export string
+
 	r := make(map[string]string)
 	r[propertyName] = propertyValue
+
 	jsonStr, err := json.Marshal(r)
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 	}
-	export = fmt.Sprintln(string(jsonStr))
 
+	export = fmt.Sprintln(string(jsonStr))
 	return export, nil
 }
 
@@ -167,6 +169,7 @@ func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey 
 	if err != nil {
 		return "", errors.New("couldnt update or create value")
 	}
+
 	var export string
 
 	r := make(map[string]string)
