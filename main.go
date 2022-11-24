@@ -33,7 +33,8 @@ func main() {
 				listenAddr = ":" + val
 			}
 			http.HandleFunc("/api/HttpExample", helper.HelloHandler)
-			log.Printf("About to listen on %s. Go to https://127.0.0.1%s/", listenAddr, listenAddr)
+			log.Printf("Server started.\n")
+			log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
 			log.Fatal(http.ListenAndServe(listenAddr, nil))
 
 		} else {
@@ -132,7 +133,7 @@ func main() {
 			}
 		}
 	} else {
-		fmt.Printf("%v is not a supported function, choose from: %v", function, functions)
+		fmt.Printf("%v is not a supported function, choose as first parameter from:\n %q", function, functions)
 		return
 	}
 
