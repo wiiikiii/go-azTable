@@ -24,9 +24,6 @@ func main() {
 
 	var args = os.Args[1:]
 	function := args[0]
-	partitionKey := args[1]
-	rowKey := args[2]
-	tableName := args[3]
 
 	if helper.Contains(functions, function) {
 
@@ -40,14 +37,19 @@ func main() {
 			log.Fatal(http.ListenAndServe(listenAddr, nil))
 
 		} else {
-			
+
 			valid := true
+
 			for _, k := range args {
 				if !helper.ValidateParams(k) {
 					valid = false
 					break
 				}
 			}
+
+			partitionKey := args[1]
+			rowKey := args[2]
+			tableName := args[3]
 
 			if valid {
 
@@ -129,7 +131,7 @@ func main() {
 
 			}
 		}
-	} else{
+	} else {
 		fmt.Printf("%v is not a supported function, choose from: %v", function, functions)
 		return
 	}
