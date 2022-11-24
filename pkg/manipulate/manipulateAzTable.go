@@ -124,12 +124,12 @@ func UpdateTableProperties(client *aztables.Client, partitionKey string, rowKey 
 
 	marshalled, err := json.Marshal(myAddEntity)
 	if err != nil {
-		return "", errors.New("couldnt convert to json")
+		return "", errors.New("couldn`t convert to json")
 	}
 
 	_, err = client.UpsertEntity(context.TODO(), marshalled, &upsertEntityOptions)
 	if err != nil {
-		return "", errors.New("couldnt update or create value")
+		return "", errors.New("couldn`t update or create value")
 	}
 
 	var export string
@@ -162,12 +162,12 @@ func DeleteTableProperties(client *aztables.Client, partitionKey string, rowKey 
 
 	marshalled, err := json.Marshal(res)
 	if err != nil {
-		return "", errors.New("couldnt convert to json")
+		return "", errors.New("couldn`t convert to json")
 	}
 
 	_, err = client.UpdateEntity(context.TODO(), marshalled, &updateEntityOptions)
 	if err != nil {
-		return "", errors.New("couldnt update or create value")
+		return "", errors.New("couldn`t update or create value")
 	}
 
 	var export string

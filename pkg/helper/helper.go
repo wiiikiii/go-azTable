@@ -16,6 +16,16 @@ func ValidateParams(value string) bool {
 	return res
 }
 
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
 
 	tableName := "CorpTest"
