@@ -57,25 +57,8 @@ func main() {
 				switch {
 
 				case function == "get":
-					var client *aztables.Client
-					connectAzStorage.ConnectStorageAccount(tableName)
-					client, err := connectAzStorage.ConnectStorageAccount(tableName)
-					if err != nil {
-						panic(err)
-					}
 
-					res, err := manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
-					if err != nil {
-						panic(err)
-					}
-					fmt.Println(res)
-
-				case function == "update":
-
-					propertyName := args[4]
-					propertyValue := args[5]
-
-					if helper.ValidateParams(propertyName) && helper.ValidateParams(propertyValue) {
+					if len(args) == 4 {
 						var client *aztables.Client
 						connectAzStorage.ConnectStorageAccount(tableName)
 						client, err := connectAzStorage.ConnectStorageAccount(tableName)
@@ -83,53 +66,99 @@ func main() {
 							panic(err)
 						}
 
-						res, err := manipulateAzTable.UpdateTableProperties(client, partitionKey, rowKey, tableName, propertyName, propertyValue)
+						res, err := manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
 						if err != nil {
 							panic(err)
 						}
 						fmt.Println(res)
+
+					} else {
+						fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey and tablename")
+						break
+					}
+
+				case function == "update":
+
+					if len(args) == 6 {
+
+						propertyName := args[4]
+						propertyValue := args[5]
+
+						if helper.ValidateParams(propertyName) && helper.ValidateParams(propertyValue) {
+							var client *aztables.Client
+							connectAzStorage.ConnectStorageAccount(tableName)
+							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+							if err != nil {
+								panic(err)
+							}
+
+							res, err := manipulateAzTable.UpdateTableProperties(client, partitionKey, rowKey, tableName, propertyName, propertyValue)
+							if err != nil {
+								panic(err)
+							}
+							fmt.Println(res)
+						}
+
+					} else {
+						fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename, propertyName and propertyValue")
+						break
 					}
 
 				case function == "delete":
 
-					propertyName := args[4]
+					if len(args) == 5 {
 
-					if helper.ValidateParams(propertyName) {
-						var client *aztables.Client
-						connectAzStorage.ConnectStorageAccount(tableName)
-						client, err := connectAzStorage.ConnectStorageAccount(tableName)
-						if err != nil {
-							panic(err)
+						propertyName := args[4]
+
+						if helper.ValidateParams(propertyName) {
+							var client *aztables.Client
+							connectAzStorage.ConnectStorageAccount(tableName)
+							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+							if err != nil {
+								panic(err)
+							}
+
+							manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName)
+							if err != nil {
+								panic(err)
+							}
+							return
 						}
 
-						manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName)
-						if err != nil {
-							panic(err)
-						}
-						return
+					} else {
+						fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename and propertyName")
+						break
+
 					}
 
 				case function == "single":
 
-					propertyName := args[4]
+					if len(args) == 5 {
 
-					if helper.ValidateParams(propertyName) {
-						var client *aztables.Client
-						connectAzStorage.ConnectStorageAccount(tableName)
-						client, err := connectAzStorage.ConnectStorageAccount(tableName)
-						if err != nil {
-							panic(err)
+						propertyName := args[4]
+
+						if helper.ValidateParams(propertyName) {
+							var client *aztables.Client
+							connectAzStorage.ConnectStorageAccount(tableName)
+							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+							if err != nil {
+								panic(err)
+							}
+							res, err := manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, propertyName)
+							if err != nil {
+								panic(err)
+							}
+							fmt.Println(res)
 						}
-						res, err := manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, propertyName)
-						if err != nil {
-							panic(err)
-						}
-						fmt.Println(res)
+
+					} else {
+						fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename and propertyName")
+						break
 					}
+
 				default:
 					fmt.Printf("Unknown Parameter %q", function)
 				}
-
 			}
 		}
 	} else {
