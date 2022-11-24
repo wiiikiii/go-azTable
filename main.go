@@ -129,6 +129,9 @@ func main() {
 
 			}
 		}
+	} else{
+		fmt.Printf("%v is not a supported function, choose from: %v", function, functions)
+		return
 	}
 
 }
