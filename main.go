@@ -6,11 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	connectAzStorage "go-table/pkg/connect"
-	helper "go-table/pkg/helper"
-	manipulateAzTable "go-table/pkg/manipulate"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	m "go-table/pkg/manipulate"
 )
 
 type ExportStruct struct {
@@ -18,21 +14,29 @@ type ExportStruct struct {
 	Value string `json:"Value"`
 }
 
-var functions = []string{"server", "get", "update", "delete", "single"}
+var envs = []string{"TABLES_STORAGE_ACCOUNT_NAME", "TABLES_PRIMARY_STORAGE_ACCOUNT_KEY", "TABLE_NAME"}
 
 func main() {
+
+	var functions = []string{"server", "get", "update", "delete", "single"}
 
 	var args = os.Args[1:]
 	function := args[0]
 
-	if helper.Contains(functions, function) {
+	t := m.Table{
+		Function:  function,
+		Functions: functions,
+	}
+
+	if m.Contains(functions, function) {
 
 		if function == "server" {
+
 			listenAddr := ":8080"
 			if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
 				listenAddr = ":" + val
 			}
-			http.HandleFunc("/api/HttpExample", helper.HelloHandler)
+			http.HandleFunc("/api/", t.GetHandler)
 			log.Printf("Server started.\n")
 			log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
 			log.Fatal(http.ListenAndServe(listenAddr, nil))
@@ -42,15 +46,14 @@ func main() {
 			valid := true
 
 			for _, k := range args {
-				if !helper.ValidateParams(k) {
+				if !t.ValidateParams(k) {
 					valid = false
 					break
 				}
 			}
 
-			partitionKey := args[1]
-			rowKey := args[2]
-			tableName := args[3]
+			t.PartitionKey = args[1]
+			t.RowKey = args[2]
 
 			if valid {
 
@@ -59,14 +62,13 @@ func main() {
 				case function == "get":
 
 					if len(args) == 4 {
-						var client *aztables.Client
-						connectAzStorage.ConnectStorageAccount(tableName)
-						client, err := connectAzStorage.ConnectStorageAccount(tableName)
+						var err error
+						t.Client, err = t.Connect()
 						if err != nil {
 							panic(err)
 						}
 
-						res, err := manipulateAzTable.GetTableData(client, partitionKey, rowKey, tableName)
+						res, err := t.Get()
 						if err != nil {
 							panic(err)
 						}
@@ -81,18 +83,17 @@ func main() {
 
 					if len(args) == 6 {
 
-						propertyName := args[4]
-						propertyValue := args[5]
+						t.PropertyName = args[4]
+						t.PropertyValue = args[5]
 
-						if helper.ValidateParams(propertyName) && helper.ValidateParams(propertyValue) {
-							var client *aztables.Client
-							connectAzStorage.ConnectStorageAccount(tableName)
-							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+						if t.ValidateParams(t.PropertyName) && t.ValidateParams(t.PropertyValue) {
+							var err error
+							t.Client, err = t.Connect()
 							if err != nil {
 								panic(err)
 							}
 
-							res, err := manipulateAzTable.UpdateTableProperties(client, partitionKey, rowKey, tableName, propertyName, propertyValue)
+							res, err := t.Update()
 							if err != nil {
 								panic(err)
 							}
@@ -108,17 +109,16 @@ func main() {
 
 					if len(args) == 5 {
 
-						propertyName := args[4]
+						t.PropertyName = args[4]
 
-						if helper.ValidateParams(propertyName) {
-							var client *aztables.Client
-							connectAzStorage.ConnectStorageAccount(tableName)
-							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+						if t.ValidateParams(t.PropertyName) {
+							var err error
+							t.Client, err = t.Connect()
 							if err != nil {
 								panic(err)
 							}
 
-							manipulateAzTable.DeleteTableProperties(client, partitionKey, rowKey, tableName, propertyName)
+							t.Delete()
 							if err != nil {
 								panic(err)
 							}
@@ -135,16 +135,15 @@ func main() {
 
 					if len(args) == 5 {
 
-						propertyName := args[4]
+						t.PropertyName = args[4]
 
-						if helper.ValidateParams(propertyName) {
-							var client *aztables.Client
-							connectAzStorage.ConnectStorageAccount(tableName)
-							client, err := connectAzStorage.ConnectStorageAccount(tableName)
+						if t.ValidateParams(t.PropertyName) {
+							var err error
+							t.Client, err = t.Connect()
 							if err != nil {
 								panic(err)
 							}
-							res, err := manipulateAzTable.GetSingleTableValue(client, partitionKey, rowKey, tableName, propertyName)
+							res, err := t.GetSingle()
 							if err != nil {
 								panic(err)
 							}
@@ -157,12 +156,12 @@ func main() {
 					}
 
 				default:
-					fmt.Printf("Unknown Parameter %q", function)
+					fmt.Printf("Unknown Parameter %q", t.Function)
 				}
 			}
 		}
 	} else {
-		fmt.Printf("%v is not a supported function, choose as first parameter from:\n %q", function, functions)
+		fmt.Printf("%v is not a supported function, choose as first parameter from:\n %q", t.Function, t.Functions)
 		return
 	}
 
