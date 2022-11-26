@@ -249,9 +249,58 @@ func (t Table) ReturnEnv(s []string) map[string]string {
 
 func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) {
 
+	t.PartitionKey = r.URL.Query().Get("PartitionKey")
+	t.RowKey = r.URL.Query().Get("RowKey")
+	message, err := t.Get()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprint(w, message)
+}
+
+func (t Table) GetSingleHandler(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	var message string
-	name := r.URL.Query().Get("function")
+	t.PartitionKey = r.URL.Query().Get("PartitionKey")
+	t.RowKey = r.URL.Query().Get("RowKey")
+	t.PropertyName = r.URL.Query().Get("PropertyName")
+	message, err = t.GetSingle()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprint(w, message)
+}
+
+func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var message string
+	name := r.URL.Query().Get("value")
+	if name == "get" {
+		message, err = t.Get()
+	}
+	if name == "update" {
+		message, err = t.Update()
+	}
+	if name == "single" {
+		message, err = t.GetSingle()
+	}
+	if name == "delete" {
+		message, err = t.Delete()
+	}
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprint(w, message)
+}
+
+func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var message string
+	name := r.URL.Query().Get("value")
 	if name == "get" {
 		message, err = t.Get()
 	}
