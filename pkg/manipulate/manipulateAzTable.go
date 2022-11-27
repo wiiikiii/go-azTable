@@ -7,9 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"os"
-	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
@@ -26,22 +23,6 @@ type Table struct {
 	PropertyValue string
 	PartitionKey  string
 	RowKey        string
-}
-
-func (t Table) Connect() (cl *aztables.Client, err error) {
-
-	serviceURL := fmt.Sprintf("https://%s.table.core.windows.net/%s", t.AccountName, t.TableName)
-
-	cred, err := aztables.NewSharedKeyCredential(t.AccountName, t.AccountKey)
-	if err != nil {
-		panic(err)
-	}
-	client, err := aztables.NewClientWithSharedKey(serviceURL, cred, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return client, err
 }
 
 func (t Table) Get() (string, error) {
@@ -216,108 +197,4 @@ func (t Table) Delete() (string, error) {
 	return export, nil
 }
 
-func (t Table) ValidateParams(string) bool {
-	res := reflect.ValueOf(t.Function).IsValid()
-	return res
-}
 
-func Contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
-}
-
-func (t Table) ReturnEnv(s []string) map[string]string {
-
-	m := make(map[string]string)
-
-	for _, v := range s {
-
-		k, ok := os.LookupEnv(v)
-		if !ok {
-			fmt.Println("Not found:", v)
-			m[v] = "false"
-		} else {
-			m[v] = k
-		}
-	}
-	return m
-}
-
-func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) {
-
-	t.PartitionKey = r.URL.Query().Get("PartitionKey")
-	t.RowKey = r.URL.Query().Get("RowKey")
-
-	message, err := t.Get()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprint(w, message)
-}
-
-func (t Table) GetSingleHandler(w http.ResponseWriter, r *http.Request) {
-
-	t.PartitionKey = r.URL.Query().Get("PartitionKey")
-	t.RowKey = r.URL.Query().Get("RowKey")
-	t.PropertyName = r.URL.Query().Get("PropertyName")
-
-	message, err := t.GetSingle()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprint(w, message)
-}
-
-func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
-
-	t.PartitionKey = r.URL.Query().Get("PartitionKey")
-	t.RowKey = r.URL.Query().Get("RowKey")
-	t.PropertyName = r.URL.Query().Get("PropertyName")
-	t.PropertyValue = r.URL.Query().Get("PropertyValue")
-
-	message, err := t.Update()
-
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprint(w, message)
-}
-
-func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
-
-	t.PartitionKey = r.URL.Query().Get("PartitionKey")
-	t.RowKey = r.URL.Query().Get("RowKey")
-	t.PropertyName = r.URL.Query().Get("PropertyName")
-	message, err := t.Delete()
-
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprint(w, message)
-}
-
-func ReturnEnv(s []string) map[string]string {
-
-	m := make(map[string]string)
-
-	for _, v := range s {
-
-		k, ok := os.LookupEnv(v)
-		if !ok {
-			fmt.Println("Not found:", v)
-			m[v] = "false"
-		} else {
-			m[v] = k
-		}
-	}
-	return m
-}
-
-func ValidateParams(value string) bool {
-	res := reflect.ValueOf(value).IsValid()
-	return res
-}
