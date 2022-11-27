@@ -18,6 +18,5 @@ func (t Table) Connect() (cl *aztables.Client, err error) {
 	if err != nil {
 		panic(err)
 	}
-
 	return client, err
 }

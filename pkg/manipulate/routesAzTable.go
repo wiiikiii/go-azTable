@@ -40,7 +40,6 @@ func (t Table) GetSingleHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "404 not found.", http.StatusNotFound)
 		return
 	}
-
 }
 
 func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +72,6 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "404 not found.", http.StatusNotFound)
 		return
 	}
-
 }
 
 func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,5 +89,4 @@ func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "404 not found.", http.StatusNotFound)
 	}
-
 }
