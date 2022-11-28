@@ -71,12 +71,7 @@ func main() {
 					switch {
 					case function == "get":
 
-						if len(args) == 4 {
-							var err error
-							t.Client, err = t.Connect()
-							if err != nil {
-								panic(err)
-							}
+						if len(args) >= 3 {
 
 							res, err := t.Get()
 							if err != nil {
@@ -85,23 +80,18 @@ func main() {
 							fmt.Println(res)
 
 						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey and tablename")
+							fmt.Printf("Parameters missing, you have to provide: partitionKey and rowKey")
 							break
 						}
 
 					case function == "update":
 
-						if len(args) == 6 {
+						if len(args) >= 5 {
 
-							t.PropertyName = args[4]
-							t.PropertyValue = args[5]
+							t.PropertyName = args[3]
+							t.PropertyValue = args[4]
 
 							if t.ValidateParams(t.PropertyName) && t.ValidateParams(t.PropertyValue) {
-								var err error
-								t.Client, err = t.Connect()
-								if err != nil {
-									panic(err)
-								}
 
 								res, err := t.Update()
 								if err != nil {
@@ -111,22 +101,17 @@ func main() {
 							}
 
 						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename, propertyName and propertyValue")
+							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, propertyName and propertyValue")
 							break
 						}
 
 					case function == "delete":
 
-						if len(args) == 5 {
+						if len(args) == 3 {
 
-							t.PropertyName = args[4]
+							t.PropertyName = args[3]
 
 							if t.ValidateParams(t.PropertyName) {
-								var err error
-								t.Client, err = t.Connect()
-								if err != nil {
-									panic(err)
-								}
 
 								t.Delete()
 								if err != nil {
@@ -136,23 +121,19 @@ func main() {
 							}
 
 						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename and propertyName")
+							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey and propertyName")
 							break
 
 						}
 
 					case function == "single":
 
-						if len(args) == 5 {
+						if len(args) == 4 {
 
-							t.PropertyName = args[4]
+							t.PropertyName = args[3]
 
 							if t.ValidateParams(t.PropertyName) {
-								var err error
-								t.Client, err = t.Connect()
-								if err != nil {
-									panic(err)
-								}
+								
 								res, err := t.GetSingle()
 								if err != nil {
 									panic(err)

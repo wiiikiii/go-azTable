@@ -46,8 +46,6 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
-		var message string
-
 		r.ParseForm()
 
 		data := struct {
@@ -61,16 +59,21 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s := data.Submissions
-		t.PropertyName = fmt.Sprintln(string(s.Get("PropertyName")))
-		t.PropertyValue = fmt.Sprintln(string(s.Get("PropertyValue")))
+		t.PartitionKey = fmt.Sprintf(string(s.Get("PartitionKey")))
+		t.RowKey = fmt.Sprintf(string(s.Get("RowKey")))
+		t.PropertyName = fmt.Sprintf(string(s.Get("PropertyName")))
+		t.PropertyValue = fmt.Sprintf(string(s.Get("PropertyValue")))
 
-		if reflect.ValueOf(t.PropertyName).IsValid() && reflect.ValueOf(t.PropertyValue).IsValid() {
-			message, _ = t.Update()
+		if t.ValidateParams(t.PropertyName) && t.ValidateParams(t.PropertyValue) {
+			message, err := t.Update()
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			}
+			fmt.Print(message)
+
 		} else {
 			http.Error(w, "not enough parameters.", http.StatusBadRequest)
 		}
-
-		fmt.Fprintf(w, message)
 
 	} else {
 		http.Error(w, "404 not found.", http.StatusNotFound)
@@ -98,7 +101,7 @@ func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		t.PropertyName = fmt.Sprintln(string(s.Get("PropertyName")))
 
 		if reflect.ValueOf(t.PropertyName).IsValid() {
-			fmt.Fprintf(w, "Here a delete property function should be implemented")
+			fmt.Print(w, "Here a delete property function should be implemented")
 		} else {
 			http.Error(w, "not enough parameters.", http.StatusBadRequest)
 		}
