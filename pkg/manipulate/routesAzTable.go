@@ -46,6 +46,8 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 
+		var message string
+
 		r.ParseForm()
 
 		data := struct {
@@ -63,10 +65,12 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		t.PropertyValue = fmt.Sprintln(string(s.Get("PropertyValue")))
 
 		if reflect.ValueOf(t.PropertyName).IsValid() && reflect.ValueOf(t.PropertyValue).IsValid() {
-			t.Update()
+			message, _ = t.Update()
 		} else {
 			http.Error(w, "not enough parameters.", http.StatusBadRequest)
 		}
+
+		fmt.Fprintf(w, message)
 
 	} else {
 		http.Error(w, "404 not found.", http.StatusNotFound)
@@ -77,16 +81,30 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "DELETE" {
-		t.PartitionKey = r.URL.Query().Get("PartitionKey")
-		t.RowKey = r.URL.Query().Get("RowKey")
-		t.PropertyName = r.URL.Query().Get("PropertyName")
-		message, err := t.Delete()
 
-		if err != nil {
-			panic(err)
+		r.ParseForm()
+
+		data := struct {
+			Method      string
+			URL         *url.URL
+			Submissions url.Values
+		}{
+			r.Method,
+			r.URL,
+			r.Form,
 		}
-		fmt.Fprint(w, message)
+
+		s := data.Submissions
+		t.PropertyName = fmt.Sprintln(string(s.Get("PropertyName")))
+
+		if reflect.ValueOf(t.PropertyName).IsValid() {
+			fmt.Fprintf(w, "Here a delete property function should be implemented")
+		} else {
+			http.Error(w, "not enough parameters.", http.StatusBadRequest)
+		}
+
 	} else {
 		http.Error(w, "404 not found.", http.StatusNotFound)
+		return
 	}
 }
