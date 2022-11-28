@@ -28,24 +28,29 @@ func main() {
 
 	t.Client, _= t.Connect()
 
+	// server
 	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
 
+	// get
 	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
 	getRowKey := getCmd.String("rowKey", "", "rowKey")
 	getPartitionKey := getCmd.String("partitionKey", "", "partitionKey")
-	getStage := getCmd.String("stage", "", "stage")
+	//getStage := getCmd.String("stage", "", "stage")
 
+	// single
 	singleCmd := flag.NewFlagSet("single", flag.ExitOnError)
 	singleRowKey := singleCmd.String("rowKey", "", "rowKey")
 	singlePartitionKey := singleCmd.String("partitionKey", "", "partitionKey")
 	singlePropertyName := singleCmd.String("propertyName", "", "propertyName")
 
+	// update
 	updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
 	updateRowKey := updateCmd.String("rowKey", "", "rowKey")
 	updatePartitionKey := updateCmd.String("partitionKey", "", "partitionKey")
 	updatePropertyName := updateCmd.String("propertyName", "", "propertyName")
 	updatePropertyValue := updateCmd.String("propertyValue", "", "propertyValue")
 
+	// delete
 	deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 	deleteRowKey := deleteCmd.String("rowKey", "", "rowKey")
 	deletePartitionKey := deleteCmd.String("partitionKey", "", "partitionKey")
@@ -75,9 +80,11 @@ func main() {
 
 		getCmd.Parse(os.Args[2:])
 		t.Function = "get"
-		t.RowKey = *getRowKey
-		t.PartitionKey = *getPartitionKey
-		t.Stage = *getStage
+		t.RowKey = fmt.Sprintf(*getRowKey)
+		t.PartitionKey = fmt.Sprintf(*getPartitionKey)
+
+		fmt.Printf("%+v\n", t)
+		//t.Stage = *getStage
 
 		res, err := t.Get()
 		if err != nil {
