@@ -7,6 +7,8 @@ import (
 	"reflect"
 )
 
+// TODO: implement mapping file, for json pass
+
 func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
@@ -69,7 +71,7 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Printf("Error: %s", err.Error())
 			}
-			fmt.Print(message)
+			fmt.Fprint(w, message)
 
 		} else {
 			http.Error(w, "not enough parameters.", http.StatusBadRequest)
