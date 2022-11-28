@@ -10,11 +10,6 @@ import (
 	m "go-table/pkg/manipulate"
 )
 
-type ExportStruct struct {
-	Name  string `json:"Name"`
-	Value string `json:"Value"`
-}
-
 func main() {
 
 	var functions = []string{"server", "get", "update", "delete", "single"}
@@ -30,6 +25,8 @@ func main() {
 		AccountKey:  env["TABLES_PRIMARY_STORAGE_ACCOUNT_KEY"],
 		TableName:   env["TABLE_NAME"],
 	}
+
+	t.Client, _= t.Connect()
 
 	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
 
@@ -76,15 +73,11 @@ func main() {
 
 	case "get":
 
-		var err error
 		getCmd.Parse(os.Args[2:])
-
 		t.Function = "get"
 		t.RowKey = *getRowKey
 		t.PartitionKey = *getPartitionKey
 		t.Stage = *getStage
-
-		t.Client, _ = t.Connect()
 
 		res, err := t.Get()
 		if err != nil {
@@ -94,13 +87,11 @@ func main() {
 
 	case "single":
 
-		var err error
+		singleCmd.Parse(os.Args[2:])
 		t.Function = "single"
 		t.RowKey = *singleRowKey
 		t.PartitionKey = *singlePartitionKey
 		t.PropertyName = *singlePropertyName
-
-		t.Client, _ = t.Connect()
 
 		res, err := t.GetSingle()
 		if err != nil {
@@ -110,14 +101,12 @@ func main() {
 
 	case "update":
 
-		var err error
+		updateCmd.Parse(os.Args[2:])
 		t.Function = "single"
 		t.RowKey = *updateRowKey
 		t.PartitionKey = *updatePartitionKey
 		t.PropertyName = *updatePropertyName
 		t.PropertyValue = *updatePropertyValue
-
-		t.Client, _ = t.Connect()
 
 		res, err := t.Update()
 		if err != nil {
@@ -127,12 +116,11 @@ func main() {
 
 	case "delete":
 
+		deleteCmd.Parse(os.Args[2:])
 		t.Function = "single"
 		t.RowKey = *deleteRowKey
 		t.PartitionKey = *deletePartitionKey
 		t.PropertyName = *deletePropertyName
-
-		t.Client, _ = t.Connect()
 
 	default:
 		fmt.Println("expected 'get','single' or 'update' subcommands")
