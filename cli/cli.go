@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -6,7 +6,17 @@ import (
 	"os"
 )
 
-func main() {
+type ArgStruct struct {
+	Name          string
+	Enable        bool
+	RowKey        string
+	PartitionKey  string
+	Stage         string
+	PropertyName  string
+	PropertyValue string
+}
+
+func (r ArgStruct) ParseInputArgs() *ArgStruct{
 
 	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
 	getEnable := getCmd.Bool("true", true, "true")
@@ -31,29 +41,45 @@ func main() {
 
 	case "get":
 		getCmd.Parse(os.Args[2:])
-		fmt.Println("subcommand 'get'")
-		fmt.Println("  enable:", *getEnable)
-		fmt.Println("  rowKey:", *getRowKey)
-		fmt.Println("  partitionKey:", *getPartitionKey)
-		fmt.Println("  stage:", *getStage)
+
+		g := ArgStruct{
+			Name:         "get",
+			Enable:       *getEnable,
+			RowKey:       *getRowKey,
+			PartitionKey: *getPartitionKey,
+			Stage:        *getStage,
+		}
+
+		return &g
 
 	case "single":
-		singleCmd.Parse(os.Args[2:])
-		fmt.Println("subcommand 'single'")
-		fmt.Println("  enable:", *singleEnable)
-		fmt.Println("  rowKey:", *singleRowKey)
-		fmt.Println("  partitionKey:", *singlePartitionKey)
-		fmt.Println("  propertyName:", *singlePropertyName)
+
+		g := ArgStruct{
+			Name:         "single",
+			Enable:       *singleEnable,
+			RowKey:       *singleRowKey,
+			PartitionKey: *singlePartitionKey,
+			PropertyName: *singlePropertyName,
+		}
+
+		return &g
+
 	case "update":
-		updateCmd.Parse(os.Args[2:])
-		fmt.Println("subcommand 'update'")
-		fmt.Println("  enable:", *updateEnable)
-		fmt.Println("  rowKey:", *updateRowKey)
-		fmt.Println("  partitionKey:", *updatePartitionKey)
-		fmt.Println("  propertyName:", *updatePropertyName)
-		fmt.Println("  propertyValue:", *updatePropertyValue)
+
+		g := ArgStruct{
+			Name:          "single",
+			Enable:        *updateEnable,
+			RowKey:        *updateRowKey,
+			PartitionKey:  *updatePartitionKey,
+			PropertyName:  *updatePropertyName,
+			PropertyValue: *updatePropertyValue,
+		}
+
+		return &g
+
 	default:
-		fmt.Println("expected 'foo' or 'bar' subcommands")
+		fmt.Println("expected 'get','single' or 'update' subcommands")
 		os.Exit(1)
+		return nil
 	}
 }
