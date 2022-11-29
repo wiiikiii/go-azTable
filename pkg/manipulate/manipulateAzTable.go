@@ -24,6 +24,7 @@ type Table struct {
 	PartitionKey  string
 	RowKey        string
 	Stage         string
+	JSonString    string
 }
 
 func (t Table) Get() (string, error) {
@@ -216,6 +217,60 @@ func (t Table) Update() (string, error) {
 	}
 
 	export = fmt.Sprintln(string(jsonStr))
+	return export, nil
+}
+
+func (t Table) UpdateJSON() (string, error) {
+
+	jsonMap := make(map[string]interface{})
+	err := json.Unmarshal([]byte(t.JSonString), &jsonMap)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var export string
+	r := make(map[string]string)
+
+	for key, value := range jsonMap {
+
+		myAddEntity := aztables.EDMEntity{
+			Entity: aztables.Entity{
+				PartitionKey: t.PartitionKey,
+				RowKey:       t.RowKey,
+			},
+			Properties: map[string]interface{}{
+				key: value,
+			},
+		}
+
+		upsertEntityOptions := aztables.UpsertEntityOptions{
+			UpdateMode: "merge",
+		}
+
+		marshalled, err := json.Marshal(myAddEntity)
+		if err != nil {
+			return "", errors.New("couldn`t convert to json")
+		}
+
+		_, err = t.Client.UpsertEntity(context.TODO(), marshalled, &upsertEntityOptions)
+		if err != nil {
+			return "", errors.New("couldn`t update or create value")
+		}
+
+		valStr := fmt.Sprint(value)
+
+		r[key] = string(valStr)
+	}
+
+	jsonStr, err := json.Marshal(r)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	}
+
+	export = fmt.Sprintln(string(jsonStr))
+
 	return export, nil
 }
 

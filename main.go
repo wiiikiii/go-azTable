@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	var functions = []string{"server", "get", "update", "delete", "single"}
+	var functions = []string{"server", "get", "update", "delete", "single", "json", "getstage"}
 
 	env := (m.ReturnEnv([]string{
 		"TABLES_STORAGE_ACCOUNT_NAME",
@@ -36,7 +36,7 @@ func main() {
 	getRowKey := getCmd.String("rowKey", "", "rowKey")
 	getPartitionKey := getCmd.String("partitionKey", "", "partitionKey")
 
-	//get stage
+	//getstage
 	getStageCmd := flag.NewFlagSet("getstage", flag.ExitOnError)
 	getStageRowKey := getStageCmd.String("rowKey", "", "rowKey")
 	getStagePartitionKey := getStageCmd.String("partitionKey", "", "partitionKey")
@@ -54,6 +54,12 @@ func main() {
 	updatePartitionKey := updateCmd.String("partitionKey", "", "partitionKey")
 	updatePropertyName := updateCmd.String("propertyName", "", "propertyName")
 	updatePropertyValue := updateCmd.String("propertyValue", "", "propertyValue")
+
+	// json
+	jsonCmd := flag.NewFlagSet("json", flag.ExitOnError)
+	jsonRowKey := jsonCmd.String("rowKey", "", "rowKey")
+	jsonPartitionKey := jsonCmd.String("partitionKey", "", "partitionKey")
+	jsonString := jsonCmd.String("jsonObject", "", "jsonObject")
 
 	// delete
 	deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
@@ -139,6 +145,20 @@ func main() {
 		}
 		fmt.Println(res)
 
+	case "json":
+
+		jsonCmd.Parse(os.Args[2:])
+		t.Function = "updateJson"
+		t.RowKey = *jsonRowKey
+		t.PartitionKey = *jsonPartitionKey
+		t.JSonString = *jsonString
+
+		res, err := t.UpdateJSON()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+
 	case "delete":
 
 		deleteCmd.Parse(os.Args[2:])
@@ -148,7 +168,7 @@ func main() {
 		t.PropertyName = *deletePropertyName
 
 	default:
-		fmt.Println("expected 'get','single' or 'update' subcommands")
+		fmt.Println("expected 'server', 'get', 'single', 'getstage', 'json' or 'update' subcommands")
 		os.Exit(1)
 	}
 }
