@@ -40,7 +40,7 @@ func main() {
 	getStageCmd := flag.NewFlagSet("getstage", flag.ExitOnError)
 	getStageRowKey := getStageCmd.String("rowKey", "", "rowKey")
 	getStagePartitionKey := getStageCmd.String("partitionKey", "", "partitionKey")
-	getStageStage := getCmd.String("stage", "", "stage")
+	getStageStage := getStageCmd.String("stage", "", "stage")
 
 	// single
 	singleCmd := flag.NewFlagSet("single", flag.ExitOnError)

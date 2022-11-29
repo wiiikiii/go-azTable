@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PARAM_WP_NETWORK_ResourceGroupNameNetwork": {
+      "value": ""
+    },
+    "PARAM_WP_Location": {
+      "value": ""
+    },
+    "PARAM_WP_Tags": {
+      "value": {}
+    },
+    "PARAM_WP_NETWORK_VnetPrefix": {
+      "value": ""
+    },
+    "PARAM_WP_NamingPattern": {
+      "value": ""
+    },
+    "PARAM_SNs": {
+      "value": []
+    }
+  }
+}

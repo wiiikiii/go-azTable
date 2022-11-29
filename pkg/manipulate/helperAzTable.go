@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -101,39 +103,59 @@ func (t Table) JsonToMap(data map[string]interface{}) map[string][]string {
 	return out
 }
 
-func (t Table) ParseJson(map[string]interface{}) ([]string, error) {
+func (t Table) FindFile(ext string) string {
+	pathS, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	var file string
+	filepath.Walk(pathS, func(path string, f os.FileInfo, _ error) error {
+		if !f.IsDir() {
+			r, err := regexp.MatchString(ext, f.Name())
+			if err == nil && r {
+				file = f.Name()
+			}
+		}
+		return nil
+	})
+	return file
+}
+
+func (t Table) ParseJson() ([]string, error) {
 
 	var param string
 	var export []string
-	switch t.StageParamFile = t.Stage; t.StageParamFile {
+	switch t.Stage {
 
-	case "0_AVD-Landingzone":
+	case "AVD-Landingzone":
 
-		param = "./0_Landingzone.parameters.json"
+		param = "Landingzone.parameters.json"
 
-	case "1_AVD-Structure":
+	case "AVD-Structure":
 
-		param = "./1_Structure.parameters.json"
+		param = "Structure.parameters.json"
 
-	case "2_AVD-Network":
+	case "AVD-Network":
 
-		param = "./2_Network.parameters.json"
+		param = "Network.parameters.json"
 
-	case "3_AVD-Infrastructure":
+	case "AVD-Infrastructure":
 
-		param = "./3_Infrastructure_AVD.parameters.json"
+		param = "Infrastructure_AVD.parameters.json"
 
-	case "6_AVD-Sessionhosts":
+	case "AVD-Sessionhosts":
 
-		param = "./5_Sessionhosts.parameters.json"
+		param = "SessionHosts.parameters.json"
 
 	default:
 
-		fmt.Printf("Error: couldn`t update or create value")
+		fmt.Printf("Error: no valid input parameter")
 	}
 
-	if len(param) > 0 {
-		content, err := ioutil.ReadFile(param)
+	s := t.FindFile(param)
+
+	if len(s) > 0 {
+		content, err := ioutil.ReadFile(s)
 		if err != nil {
 			log.Fatal("Error when opening file: ", err)
 		}
@@ -151,3 +173,4 @@ func (t Table) ParseJson(map[string]interface{}) ([]string, error) {
 	}
 	return export, nil
 }
+

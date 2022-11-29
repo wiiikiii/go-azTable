@@ -13,18 +13,17 @@ import (
 )
 
 type Table struct {
-	Client         *aztables.Client
-	Function       string
-	Functions      []string
-	AccountName    string
-	AccountKey     string
-	TableName      string
-	PropertyName   string
-	PropertyValue  string
-	PartitionKey   string
-	RowKey         string
-	Stage          string
-	StageParamFile string
+	Client        *aztables.Client
+	Function      string
+	Functions     []string
+	AccountName   string
+	AccountKey    string
+	TableName     string
+	PropertyName  string
+	PropertyValue string
+	PartitionKey  string
+	RowKey        string
+	Stage         string
 }
 
 func (t Table) Get() (string, error) {
@@ -150,18 +149,29 @@ func (t Table) GetStage() (string, error) {
 
 			if myEntity.RowKey == t.RowKey {
 
-				for k, v := range myEntity.Properties {
-					if k == t.PropertyName {
+				r := make(map[string]string)
 
-						r := make(map[string]string)
-						r[k] = v.(string)
+				xi, err := t.ParseJson()
+				if err != nil {
+					panic(err)
+				}
 
-						jsonStr, err := json.Marshal(r)
-						if err != nil {
-							fmt.Printf("Error: %s", err.Error())
+				for _, i := range xi {
+
+					for k, v := range myEntity.Properties {
+
+						if i == k {
+
+							r[k] = v.(string)
+
+							jsonStr, err := json.Marshal(r)
+							if err != nil {
+								fmt.Printf("Error: %s", err.Error())
+							}
+							export = fmt.Sprintln(string(jsonStr))
 						}
-						export = fmt.Sprintln(string(jsonStr))
 					}
+
 				}
 			}
 		}
