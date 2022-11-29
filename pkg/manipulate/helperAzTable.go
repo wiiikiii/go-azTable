@@ -1,9 +1,13 @@
 package manipulateAzTable
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
+	"strings"
 )
 
 func ReturnEnv(s []string) map[string]string {
@@ -59,29 +63,28 @@ func (t Table) ReturnEnv(s []string) map[string]string {
 	return m
 }
 
-func JsonToMap(data map[string]interface{}) map[string][]string {
-	// final output
+func (t Table) JsonToMap(data map[string]interface{}) map[string][]string {
+
 	out := make(map[string][]string)
 
-	// check all keys in data
 	for key, value := range data {
-		// check if key not exist in out variable, add it
+
 		if _, ok := out[key]; !ok {
 			out[key] = []string{}
 		}
 
-		if valueA, ok := value.(map[string]interface{}); ok { // if value is map
+		if valueA, ok := value.(map[string]interface{}); ok {
 			out[key] = append(out[key], "")
-			for keyB, valueB := range JsonToMap(valueA) {
+			for keyB, valueB := range t.JsonToMap(valueA) {
 				if _, ok := out[keyB]; !ok {
 					out[keyB] = []string{}
 				}
 				out[keyB] = append(out[keyB], valueB...)
 			}
-		} else if valueA, ok := value.([]interface{}); ok { // if value is array
+		} else if valueA, ok := value.([]interface{}); ok {
 			for _, valueB := range valueA {
 				if valueC, ok := valueB.(map[string]interface{}); ok {
-					for keyD, valueD := range JsonToMap(valueC) {
+					for keyD, valueD := range t.JsonToMap(valueC) {
 						if _, ok := out[keyD]; !ok {
 							out[keyD] = []string{}
 						}
@@ -91,30 +94,60 @@ func JsonToMap(data map[string]interface{}) map[string][]string {
 					out[key] = append(out[key], fmt.Sprintf("%v", valueB))
 				}
 			}
-		} else { // if string and numbers and other ...
+		} else {
 			out[key] = append(out[key], fmt.Sprintf("%v", value))
 		}
 	}
 	return out
 }
 
+func (t Table) ParseJson(map[string]interface{}) ([]string, error) {
 
-// func main() {
+	var param string
+	var export []string
+	switch t.StageParamFile = t.Stage; t.StageParamFile {
 
-// 	content, err := ioutil.ReadFile("./test.json")
-// 	if err != nil {
-// 		log.Fatal("Error when opening file: ", err)
-// 	}
+	case "0_AVD-Landingzone":
 
-// 	var JSON map[string]interface{}
-// 	json.Unmarshal([]byte(content), &JSON)
+		param = "./0_Landingzone.parameters.json"
 
-// 	neededOutput := jsonToMap(JSON)
+	case "1_AVD-Structure":
 
-// 	for key := range neededOutput {
-// 		if strings.HasPrefix(key, "PARAM"){
-// 			fmt.Println(key)
-// 		}
-		
-// 	}
-// }
+		param = "./1_Structure.parameters.json"
+
+	case "2_AVD-Network":
+
+		param = "./2_Network.parameters.json"
+
+	case "3_AVD-Infrastructure":
+
+		param = "./3_Infrastructure_AVD.parameters.json"
+
+	case "6_AVD-Sessionhosts":
+
+		param = "./5_Sessionhosts.parameters.json"
+
+	default:
+
+		fmt.Printf("Error: couldn`t update or create value")
+	}
+
+	if len(param) > 0 {
+		content, err := ioutil.ReadFile(param)
+		if err != nil {
+			log.Fatal("Error when opening file: ", err)
+		}
+
+		var JSON map[string]interface{}
+		json.Unmarshal([]byte(content), &JSON)
+
+		output := t.JsonToMap(JSON)
+		for key := range output {
+			if strings.HasPrefix(key, "PARAM") {
+				export = append(export, key)
+			}
+		}
+
+	}
+	return export, nil
+}

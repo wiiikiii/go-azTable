@@ -13,17 +13,18 @@ import (
 )
 
 type Table struct {
-	Client        *aztables.Client
-	Function      string
-	Functions     []string
-	AccountName   string
-	AccountKey    string
-	TableName     string
-	PropertyName  string
-	PropertyValue string
-	PartitionKey  string
-	RowKey        string
-	Stage         string
+	Client         *aztables.Client
+	Function       string
+	Functions      []string
+	AccountName    string
+	AccountKey     string
+	TableName      string
+	PropertyName   string
+	PropertyValue  string
+	PartitionKey   string
+	RowKey         string
+	Stage          string
+	StageParamFile string
 }
 
 func (t Table) Get() (string, error) {
