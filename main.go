@@ -26,7 +26,7 @@ func main() {
 		TableName:   env["TABLE_NAME"],
 	}
 
-	t.Client, _= t.Connect()
+	t.Client, _ = t.Connect()
 
 	// server
 	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
@@ -35,7 +35,12 @@ func main() {
 	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
 	getRowKey := getCmd.String("rowKey", "", "rowKey")
 	getPartitionKey := getCmd.String("partitionKey", "", "partitionKey")
-	//getStage := getCmd.String("stage", "", "stage")
+
+	//get stage
+	getStageCmd := flag.NewFlagSet("getstage", flag.ExitOnError)
+	getStageRowKey := getStageCmd.String("rowKey", "", "rowKey")
+	getStagePartitionKey := getStageCmd.String("partitionKey", "", "partitionKey")
+	getStageStage := getCmd.String("stage", "", "stage")
 
 	// single
 	singleCmd := flag.NewFlagSet("single", flag.ExitOnError)
@@ -83,10 +88,23 @@ func main() {
 		t.RowKey = fmt.Sprintf(*getRowKey)
 		t.PartitionKey = fmt.Sprintf(*getPartitionKey)
 
-		fmt.Printf("%+v\n", t)
-		//t.Stage = *getStage
+		//fmt.Printf("%+v\n", t) <-- Print all Values from Struct
 
 		res, err := t.Get()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+
+	case "getstage":
+
+		getStageCmd.Parse(os.Args[2:])
+		t.Function = "getstage"
+		t.RowKey = fmt.Sprintf(*getStageRowKey)
+		t.PartitionKey = fmt.Sprintf(*getStagePartitionKey)
+		t.Stage = fmt.Sprintf(*getStageStage)
+
+		res, err := t.GetStage()
 		if err != nil {
 			panic(err)
 		}

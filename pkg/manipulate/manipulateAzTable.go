@@ -107,6 +107,54 @@ func (t Table) GetSingle() (string, error) {
 						r := make(map[string]string)
 						r[k] = v.(string)
 
+						jsonStr, err := json.Marshal(r[k])
+						if err != nil {
+							fmt.Printf("Error: %s", err.Error())
+						}
+						export = fmt.Sprintln(string(jsonStr))
+					}
+				}
+			}
+		}
+	}
+	return export, nil
+}
+
+func (t Table) GetStage() (string, error) {
+
+	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
+	options := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+		Top:    to.Ptr(int32(500)),
+	}
+
+	pager := t.Client.NewListEntitiesPager(options)
+	pageCount := 0
+
+	var export string
+
+	for pager.More() {
+		response, err := pager.NextPage(context.TODO())
+		if err != nil {
+			panic(err)
+		}
+		pageCount += 1
+
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				panic(err)
+			}
+
+			if myEntity.RowKey == t.RowKey {
+
+				for k, v := range myEntity.Properties {
+					if k == t.PropertyName {
+
+						r := make(map[string]string)
+						r[k] = v.(string)
+
 						jsonStr, err := json.Marshal(r)
 						if err != nil {
 							fmt.Printf("Error: %s", err.Error())
