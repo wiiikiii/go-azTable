@@ -23,6 +23,7 @@ type Table struct {
 	PropertyValue string
 	PartitionKey  string
 	RowKey        string
+	Stage         string
 }
 
 func (t Table) Get() (string, error) {
@@ -196,5 +197,3 @@ func (t Table) Delete() (string, error) {
 	export = fmt.Sprintln(string(jsonStr))
 	return export, nil
 }
-
-

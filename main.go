@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,153 +10,127 @@ import (
 	m "go-table/pkg/manipulate"
 )
 
-type ExportStruct struct {
-	Name  string `json:"Name"`
-	Value string `json:"Value"`
-}
-
-var err error
-
 func main() {
+
+	var functions = []string{"server", "get", "update", "delete", "single"}
 
 	env := (m.ReturnEnv([]string{
 		"TABLES_STORAGE_ACCOUNT_NAME",
 		"TABLES_PRIMARY_STORAGE_ACCOUNT_KEY",
 		"TABLE_NAME"}))
 
-	var functions = []string{"server", "get", "update", "delete", "single"}
-	var args = os.Args[1:]
-	function := args[0]
-
 	t := m.Table{
-		Function:    function,
 		Functions:   functions,
 		AccountName: env["TABLES_STORAGE_ACCOUNT_NAME"],
 		AccountKey:  env["TABLES_PRIMARY_STORAGE_ACCOUNT_KEY"],
 		TableName:   env["TABLE_NAME"],
 	}
 
-	if m.Contains(functions, function) {
+	t.Client, _= t.Connect()
 
-		t.Client, err = t.Connect()
-		if err == nil {
-			if function == "server" {
+	// server
+	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
 
-				listenAddr := ":8080"
-				if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
-					listenAddr = ":" + val
-				}
-				http.HandleFunc("/api/table/get", t.GetHandler)
-				http.HandleFunc("/api/table/getsingle", t.GetSingleHandler)
-				http.HandleFunc("/api/table/update", t.UpdateHandler)
-				http.HandleFunc("/api/table/delete", t.DeleteHandler)
-				log.Printf("Server started.\n")
-				log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
-				log.Fatal(http.ListenAndServe(listenAddr, nil))
+	// get
+	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
+	getRowKey := getCmd.String("rowKey", "", "rowKey")
+	getPartitionKey := getCmd.String("partitionKey", "", "partitionKey")
+	//getStage := getCmd.String("stage", "", "stage")
 
-			} else {
-				valid := true
+	// single
+	singleCmd := flag.NewFlagSet("single", flag.ExitOnError)
+	singleRowKey := singleCmd.String("rowKey", "", "rowKey")
+	singlePartitionKey := singleCmd.String("partitionKey", "", "partitionKey")
+	singlePropertyName := singleCmd.String("propertyName", "", "propertyName")
 
-				for _, k := range args {
-					if !t.ValidateParams(k) {
-						valid = false
-						break
-					}
-				}
+	// update
+	updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
+	updateRowKey := updateCmd.String("rowKey", "", "rowKey")
+	updatePartitionKey := updateCmd.String("partitionKey", "", "partitionKey")
+	updatePropertyName := updateCmd.String("propertyName", "", "propertyName")
+	updatePropertyValue := updateCmd.String("propertyValue", "", "propertyValue")
 
-				t.PartitionKey = args[1]
-				t.RowKey = args[2]
+	// delete
+	deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
+	deleteRowKey := deleteCmd.String("rowKey", "", "rowKey")
+	deletePartitionKey := deleteCmd.String("partitionKey", "", "partitionKey")
+	deletePropertyName := deleteCmd.String("propertyName", "", "propertyName")
 
-				if valid {
+	switch os.Args[1] {
 
-					switch {
-					case function == "get":
+	case "server":
 
-						if len(args) >= 3 {
+		serverCmd.Parse(os.Args[2:])
+		t.Function = "server"
+		t.Client, _ = t.Connect()
 
-							res, err := t.Get()
-							if err != nil {
-								panic(err)
-							}
-							fmt.Println(res)
-
-						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey and rowKey")
-							break
-						}
-
-					case function == "update":
-
-						if len(args) >= 5 {
-
-							t.PropertyName = args[3]
-							t.PropertyValue = args[4]
-
-							if t.ValidateParams(t.PropertyName) && t.ValidateParams(t.PropertyValue) {
-
-								res, err := t.Update()
-								if err != nil {
-									panic(err)
-								}
-								fmt.Println(res)
-							}
-
-						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, propertyName and propertyValue")
-							break
-						}
-
-					case function == "delete":
-
-						if len(args) == 3 {
-
-							t.PropertyName = args[3]
-
-							if t.ValidateParams(t.PropertyName) {
-
-								t.Delete()
-								if err != nil {
-									panic(err)
-								}
-								return
-							}
-
-						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey and propertyName")
-							break
-
-						}
-
-					case function == "single":
-
-						if len(args) == 4 {
-
-							t.PropertyName = args[3]
-
-							if t.ValidateParams(t.PropertyName) {
-								
-								res, err := t.GetSingle()
-								if err != nil {
-									panic(err)
-								}
-								fmt.Println(res)
-							}
-
-						} else {
-							fmt.Printf("Parameters missing, you have to provide: partitionKey, rowKey, tablename and propertyName")
-							break
-						}
-
-					default:
-						fmt.Printf("Unknown Parameter %q", t.Function)
-					}
-				}
-			}
-		} else {
-			fmt.Println(err)
-			fmt.Printf("%v is not a supported function, choose as first parameter from:\n %q", t.Function, t.Functions)
-			return
+		listenAddr := ":8080"
+		if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
+			listenAddr = ":" + val
 		}
-	}
+		http.HandleFunc("/api/table/get", t.GetHandler)
+		http.HandleFunc("/api/table/getsingle", t.GetSingleHandler)
+		http.HandleFunc("/api/table/update", t.UpdateHandler)
+		http.HandleFunc("/api/table/delete", t.DeleteHandler)
+		log.Printf("Server started.\n")
+		log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
+		log.Fatal(http.ListenAndServe(listenAddr, nil))
 
+	case "get":
+
+		getCmd.Parse(os.Args[2:])
+		t.Function = "get"
+		t.RowKey = fmt.Sprintf(*getRowKey)
+		t.PartitionKey = fmt.Sprintf(*getPartitionKey)
+
+		fmt.Printf("%+v\n", t)
+		//t.Stage = *getStage
+
+		res, err := t.Get()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+
+	case "single":
+
+		singleCmd.Parse(os.Args[2:])
+		t.Function = "single"
+		t.RowKey = *singleRowKey
+		t.PartitionKey = *singlePartitionKey
+		t.PropertyName = *singlePropertyName
+
+		res, err := t.GetSingle()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+
+	case "update":
+
+		updateCmd.Parse(os.Args[2:])
+		t.Function = "single"
+		t.RowKey = *updateRowKey
+		t.PartitionKey = *updatePartitionKey
+		t.PropertyName = *updatePropertyName
+		t.PropertyValue = *updatePropertyValue
+
+		res, err := t.Update()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+
+	case "delete":
+
+		deleteCmd.Parse(os.Args[2:])
+		t.Function = "single"
+		t.RowKey = *deleteRowKey
+		t.PartitionKey = *deletePartitionKey
+		t.PropertyName = *deletePropertyName
+
+	default:
+		fmt.Println("expected 'get','single' or 'update' subcommands")
+		os.Exit(1)
+	}
 }
