@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PARAM_WP_SH_ResourceGroupNameAVDSessionHosts": {
+      "value": ""
+    },
+    "PARAM_WP_SH_ResourceGroupNameIdentity": {
+      "value": ""
+    },
+    "PARAM_WP_NamingPattern": {
+      "value": ""
+    },
+    "PARAM_WP_Location": {
+      "value": ""
+    },
+    "PARAM_WP_Tags": {
+      "value": {}
+    },
+    "PARAM_WP_SH_AvdGroupID": {
+      "value": ""
+    },
+    "PARAM_WP_SH_HostPoolName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_HostPoolRegInfo": {
+      "value": {}
+    },
+    "PARAM_WP_SH_KeyVaultName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_LawName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_WorkspaceName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_AppGroupName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_AvSetID": {
+      "value": ""
+    },
+    "PARAM_WP_SH_NrOfSessionHosts": {
+      "value": 0
+    },
+    "PARAM_WP_SH_AvdVmSize": {
+      "value": ""
+    },
+    "PARAM_WP_SH_SigResourceGroup": {
+      "value": ""
+    },
+    "PARAM_WP_SH_SigName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_ImageName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_SaName": {
+      "value": ""
+    },
+    "PARAM_WP_SH_VnetName": {
+      "value": ""
+    }
+  }
+}
