@@ -2,7 +2,6 @@ package manipulateAzTable
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -117,42 +116,20 @@ func (t Table) FindFile(ext string) string {
 				file = f.Name()
 			}
 		}
-		return nil
+		return err
 	})
 	return file
 }
 
 func (t Table) ParseJson() ([]string, error) {
 
-	var param string
 	var export []string
-	switch t.Stage {
+	var param string
 
-	case "AVD-Landingzone":
+	if len(t.PartitionKey) != 0 {
 
-		param = "Landingzone.parameters.json"
-
-	case "AVD-Structure":
-
-		param = "Structure.parameters.json"
-
-	case "AVD-Network":
-
-		param = "Network.parameters.json"
-
-	case "AVD-Infrastructure":
-
-		param = "Infrastructure_AVD.parameters.json"
-
-	case "AVD-Sessionhosts":
-
-		param = "SessionHosts.parameters.json"
-
-	default:
-
-		err := errors.New("param file not found")
-		log.Fatal(err)
-	}
+		param = fmt.Sprintf("%v-%v.parameters.json", t.PartitionKey,t.Stage)
+	} 
 
 	s := t.FindFile(param)
 
@@ -171,8 +148,6 @@ func (t Table) ParseJson() ([]string, error) {
 				export = append(export, key)
 			}
 		}
-
 	}
 	return export, nil
 }
-
