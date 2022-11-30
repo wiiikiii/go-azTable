@@ -2,6 +2,7 @@ package manipulateAzTable
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -149,7 +150,8 @@ func (t Table) ParseJson() ([]string, error) {
 
 	default:
 
-		fmt.Printf("Error: no valid input parameter")
+		err := errors.New("param file not found")
+		log.Fatal(err)
 	}
 
 	s := t.FindFile(param)
@@ -157,7 +159,7 @@ func (t Table) ParseJson() ([]string, error) {
 	if len(s) > 0 {
 		content, err := ioutil.ReadFile(s)
 		if err != nil {
-			log.Fatal("Error when opening file: ", err)
+			log.Fatal("error when opening file: ", err)
 		}
 
 		var JSON map[string]interface{}
