@@ -75,10 +75,11 @@ func (t Table) ParseCli() {
 		if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
 			listenAddr = ":" + val
 		}
-		http.HandleFunc("/api/table/get", t.MakeHttpHandler(t.GetHandler))
-		http.HandleFunc("/api/table/getsingle", t.MakeHttpHandler(t.GetSingleHandler))
-		http.HandleFunc("/api/table/update", t.MakeHttpHandler(t.UpdateHandler))
-		http.HandleFunc("/api/table/delete", t.MakeHttpHandler(t.DeleteHandler))
+		http.HandleFunc("/api/table/get", t.MakeHttpHandler(t.GetHttpHandler))
+		http.HandleFunc("/api/table/getsingle", t.MakeHttpHandler(t.GetSingleHttpHandler))
+		http.HandleFunc("/api/table/update", t.MakeHttpHandler(t.UpdateHttpHandler))
+		http.HandleFunc("/api/table/delete", t.MakeHttpHandler(t.DeleteHttpHandler))
+		http.HandleFunc("/api/table/json", t.MakeHttpHandler(t.JSonGetHttpHandler))
 		log.Printf("Server started.\n")
 		log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
 		log.Fatal(http.ListenAndServe(listenAddr, nil))

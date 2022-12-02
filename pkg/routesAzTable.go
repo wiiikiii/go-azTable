@@ -37,7 +37,7 @@ func writeJson(w http.ResponseWriter, status int, v any) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) error {
+func (t Table) GetHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodGet {
 		t.PartitionKey = r.URL.Query().Get("PartitionKey")
@@ -47,7 +47,7 @@ func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
 		}
-		
+
 		return writeJson(w, http.StatusOK, message)
 
 	} else {
@@ -57,7 +57,7 @@ func (t Table) GetHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
-func (t Table) GetSingleHandler(w http.ResponseWriter, r *http.Request) error {
+func (t Table) GetSingleHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodGet {
 		t.PartitionKey = r.URL.Query().Get("PartitionKey")
@@ -78,7 +78,7 @@ func (t Table) GetSingleHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
-func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) error {
+func (t Table) UpdateHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodPost {
 
@@ -120,7 +120,7 @@ func (t Table) UpdateHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
-func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) error {
+func (t Table) DeleteHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodDelete {
 
@@ -156,4 +156,51 @@ func (t Table) DeleteHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return writeJson(w, http.StatusOK, "ok")
+}
+
+func (t Table) JSonGetHttpHandler(w http.ResponseWriter, r *http.Request) error {
+
+	if r.Method == http.MethodGet {
+
+		t.PartitionKey = r.URL.Query().Get("PartitionKey")
+		t.RowKey = r.URL.Query().Get("RowKey")
+
+		message, err := t.Get()
+		if err != nil {
+			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
+		}
+
+		return writeJson(w, http.StatusOK, message)
+
+	} else if r.Method == http.MethodPost {
+
+		r.ParseForm()
+
+		data := struct {
+			Method      string
+			URL         *url.URL
+			Submissions url.Values
+		}{
+			r.Method,
+			r.URL,
+			r.Form,
+		}
+
+		s := data.Submissions
+		t.PropertyName = fmt.Sprintln(string(s.Get("PropertyName")))
+
+		if reflect.ValueOf(t.PropertyName).IsValid() {
+			fmt.Print(w, "Here a delete property function should be implemented")
+		} else {
+			http.Error(w, "not enough parameters.", http.StatusBadRequest)
+		}
+
+		return writeJson(w, http.StatusOK, "message")
+
+	} else {
+
+		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
+
+	}
+
 }
