@@ -232,6 +232,7 @@ func (t Table) GetConfigHttpHandler(w http.ResponseWriter, r *http.Request) erro
 		t.RowKey = r.URL.Query().Get("RowKey")
 
 		message, err := t.GetConfig()
+
 		if err != nil {
 			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
 		}
@@ -239,7 +240,6 @@ func (t Table) GetConfigHttpHandler(w http.ResponseWriter, r *http.Request) erro
 		return writeJson(w, http.StatusOK, message)
 
 	} else {
-
 		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
 	}
 }

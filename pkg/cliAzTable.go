@@ -184,7 +184,7 @@ func (t Table) ParseCli() {
 			fmt.Printf("Error: %s", err.Error())
 		}
 		
-		fmt.Println(current)
+		fmt.Printf("%s", current)
 
 	default:
 		fmt.Println("expected 'server', 'get', 'single', 'getstage', 'json' or 'update' subcommands")

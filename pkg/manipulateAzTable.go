@@ -342,10 +342,7 @@ func (t Table) GetConfig() (string, error) {
 
 				jsonStruct.Status = "200"
 				jsonStruct.ErrorText = ""
-				jsonStruct.Meta.Key = "6aad6be5-e01f-4e1b-a8af-887eb7851957"
-				jsonStruct.Meta.Name = "e332cdc2-15db-4280-807d-ed119fedd95f"
 				jsonStruct.Meta.LastUpdate = dateTime
-				jsonStruct.Configurations.Name = "HP-POOL-01"
 				jsonStruct.Configurations.LuUpdate = dateTime
 				jsonStruct.Configurations.LuProcessed = dateTime
 				jsonStruct.Configurations.Fields.Tier.SelectValues = []string{fmt.Sprint(myEntity.Properties["tierSelectValues"])}
@@ -381,6 +378,9 @@ func (t Table) GetConfig() (string, error) {
 
 			if myEntity.RowKey == t.RowKey {
 
+				jsonStruct.Meta.Key = "6aad6be5-e01f-4e1b-a8af-887eb7851957"
+				jsonStruct.Meta.Name = "e332cdc2-15db-4280-807d-ed119fedd95f"
+				jsonStruct.Configurations.Name = "HP-POOL-01"
 				jsonStruct.Configurations.Fields.Tier.Values = fmt.Sprint(myEntity.Properties["performanceTier"])
 				jsonStruct.Configurations.Fields.Location.Values = fmt.Sprint(myEntity.Properties["location"])
 				jsonStruct.Configurations.Fields.Usercount.Values = fmt.Sprint(myEntity.Properties["userCount"])
