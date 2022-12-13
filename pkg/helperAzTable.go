@@ -128,8 +128,8 @@ func (t Table) ParseJson() ([]string, error) {
 
 	if len(t.PartitionKey) != 0 {
 
-		param = fmt.Sprintf("%v-%v.parameters.json", t.PartitionKey,t.Stage)
-	} 
+		param = fmt.Sprintf("%v-%v.parameters.json", t.PartitionKey, t.Stage)
+	}
 
 	s := t.FindFile(param)
 
@@ -150,4 +150,27 @@ func (t Table) ParseJson() ([]string, error) {
 		}
 	}
 	return export, nil
+}
+
+func (t Table) GetValueFromMap(v string) (string, error) {
+	c, err := ioutil.ReadFile("map.json")
+	if err != nil {
+		log.Fatal("error when opening file: ", err)
+	}
+
+	var J, P map[string]interface{}
+
+	json.Unmarshal([]byte(c), &J)
+	json.Unmarshal([]byte(v), &P)
+
+	for key := range J {
+		for k, v := range P {
+			if k == key {
+				return key, nil
+			}
+			return fmt.Sprint(v), nil
+		}
+	}
+	log.Fatal("error, value not found: ", err)
+	return "", err
 }

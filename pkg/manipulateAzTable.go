@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
@@ -27,6 +26,8 @@ type Table struct {
 	JSonString    string
 }
 
+var dateTime = time.Now().Format("02-01-2006 15:04:05")
+
 func (t Table) Get() (string, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
@@ -43,7 +44,7 @@ func (t Table) Get() (string, error) {
 	for pager.More() {
 		response, err := pager.NextPage(context.TODO())
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error: %s", err.Error())
 		}
 		pageCount += 1
 
@@ -51,7 +52,7 @@ func (t Table) Get() (string, error) {
 			var myEntity aztables.EDMEntity
 			err = json.Unmarshal(entity, &myEntity)
 			if err != nil {
-				panic(err)
+				fmt.Printf("Error: %s", err.Error())
 			}
 
 			if myEntity.RowKey == t.RowKey {
@@ -61,12 +62,8 @@ func (t Table) Get() (string, error) {
 					fmt.Printf("Error: %s", err.Error())
 				}
 
-				err = ioutil.WriteFile("data.json", jsonStr, 0644)
-				if err != nil {
-					log.Fatal(err)
-				}
-
 				export = fmt.Sprintln(string(jsonStr))
+
 			}
 		}
 	}
@@ -310,4 +307,98 @@ func (t Table) Delete() (string, error) {
 
 	export = fmt.Sprintln(string(jsonStr))
 	return export, nil
+}
+
+func (t Table) GetConfig() (string, error) {
+	t.RowKey = "SELECT-VALUES"
+	var jsonStruct JsonStruct
+
+	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
+	options := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+		Top:    to.Ptr(int32(500)),
+	}
+
+	pager := t.Client.NewListEntitiesPager(options)
+	pageCount := 0
+
+	var err error
+
+	for pager.More() {
+		response, err := pager.NextPage(context.TODO())
+		if err != nil {
+			fmt.Printf("Error: %s", err.Error())
+		}
+		pageCount += 1
+
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			}
+
+			if myEntity.RowKey == t.RowKey {
+
+				jsonStruct.Status = "200"
+				jsonStruct.ErrorText = ""
+				jsonStruct.Meta.Key = "6aad6be5-e01f-4e1b-a8af-887eb7851957"
+				jsonStruct.Meta.Name = "e332cdc2-15db-4280-807d-ed119fedd95f"
+				jsonStruct.Meta.LastUpdate = dateTime
+				jsonStruct.Configurations.Name = "HP-POOL-01"
+				jsonStruct.Configurations.LuUpdate = dateTime
+				jsonStruct.Configurations.LuProcessed = dateTime
+				jsonStruct.Configurations.Fields.Tier.SelectValues = []string{fmt.Sprint(myEntity.Properties["tierSelectValues"])}
+				jsonStruct.Configurations.Fields.Location.SelectValues = []string{fmt.Sprint(myEntity.Properties["locationSelectValues"])}
+				jsonStruct.Configurations.Fields.Usercount.SelectValues = []string{fmt.Sprint(myEntity.Properties["userCountSelectValues"])}
+				jsonStruct.Configurations.Fields.Maintenance.SelectValues = []string{fmt.Sprint(myEntity.Properties["maintenanceSelectValues"])}
+				jsonStruct.Configurations.Fields.Environment.SelectValues = []string{fmt.Sprint(myEntity.Properties["environmentSelectValues"])}
+				jsonStruct.Configurations.Fields.Backup.SelectValues = []string{fmt.Sprint(myEntity.Properties["backupSelectValues"])}
+				jsonStruct.Configurations.Fields.Recovery.SelectValues = []string{fmt.Sprint(myEntity.Properties["recoverySelectValues"])}
+				jsonStruct.Configurations.Fields.Applications.SelectValues = []string{fmt.Sprint(myEntity.Properties["applicationsSelectValues"])}
+			}
+		}
+	}
+
+	t.RowKey = "CURRENT-CONFIG"
+
+	pager = t.Client.NewListEntitiesPager(options)
+	pageCount = 0
+
+	for pager.More() {
+		response, err := pager.NextPage(context.TODO())
+		if err != nil {
+			fmt.Printf("Error: %s", err.Error())
+		}
+		pageCount += 1
+
+		for _, entity := range response.Entities {
+			var myEntity aztables.EDMEntity
+			err = json.Unmarshal(entity, &myEntity)
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			}
+
+			if myEntity.RowKey == t.RowKey {
+
+				jsonStruct.Configurations.Fields.Tier.Values = fmt.Sprint(myEntity.Properties["performanceTier"])
+				jsonStruct.Configurations.Fields.Location.Values = fmt.Sprint(myEntity.Properties["location"])
+				jsonStruct.Configurations.Fields.Usercount.Values = fmt.Sprint(myEntity.Properties["userCount"])
+				jsonStruct.Configurations.Fields.Maintenance.Values = fmt.Sprint(myEntity.Properties["maintenance"])
+				jsonStruct.Configurations.Fields.Environment.Values = fmt.Sprint(myEntity.Properties["environment"])
+				jsonStruct.Configurations.Fields.Backup.Values = fmt.Sprint(myEntity.Properties["backup"])
+				jsonStruct.Configurations.Fields.Recovery.Values = fmt.Sprint(myEntity.Properties["recovery"])
+				jsonStruct.Configurations.Fields.Hostpools.Values = fmt.Sprint(myEntity.Properties["hostPools"])
+				jsonStruct.Configurations.Fields.Applications.Values = []string{fmt.Sprint(myEntity.Properties["applications"])}
+
+				i, err := json.Marshal(jsonStruct)
+				if err != nil {
+					fmt.Printf("Error: %s", err.Error())
+				}
+
+				return string(i), nil
+			}
+		}
+	}
+	return "", err
 }
