@@ -28,7 +28,7 @@ type Table struct {
 
 var dateTime = time.Now().Format("02-01-2006 15:04:05")
 
-func (t Table) Get() (string, error) {
+func (t Table) Get() ([]byte, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
 	options := &aztables.ListEntitiesOptions{
@@ -70,7 +70,7 @@ func (t Table) Get() (string, error) {
 	return export, nil
 }
 
-func (t Table) GetSingle() (string, error) {
+func (t Table) GetSingle() ([]byte, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
 	options := &aztables.ListEntitiesOptions{
@@ -309,7 +309,7 @@ func (t Table) Delete() (string, error) {
 	return export, nil
 }
 
-func (t Table) GetConfig() (string, error) {
+func (t Table) GetConfig() ([]byte, error) {
 	t.RowKey = "SELECT-VALUES"
 	var jsonStruct JsonStruct
 
@@ -396,9 +396,9 @@ func (t Table) GetConfig() (string, error) {
 					fmt.Printf("Error: %s", err.Error())
 				}
 
-				return string(i), nil
+				return i, nil
 			}
 		}
 	}
-	return "", err
+	return nil, err
 }

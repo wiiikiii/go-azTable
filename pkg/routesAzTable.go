@@ -32,8 +32,8 @@ func (t Table) MakeHttpHandler(f apiFunc) http.HandlerFunc {
 }
 
 func writeJson(w http.ResponseWriter, status int, v any) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
 }
 
@@ -237,9 +237,11 @@ func (t Table) GetConfigHttpHandler(w http.ResponseWriter, r *http.Request) erro
 			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
 		}
 
-		return writeJson(w, http.StatusOK, message)
+		//w := writeJson(w, http.StatusOK, message)
+		w.Write(message)
 
 	} else {
 		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
 	}
+	return nil
 }
