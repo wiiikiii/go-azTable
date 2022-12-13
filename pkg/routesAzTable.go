@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"strings"
 )
 
 type apiError struct {
@@ -72,10 +71,7 @@ func (t Table) ConfigHttpHandler(w http.ResponseWriter, r *http.Request) error {
 			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
 		}
 
-		resp := strings.ReplaceAll(message, "\\", "")
-		resp = strings.ReplaceAll(resp, "\\", "")
-
-		return writeJson(w, http.StatusOK, resp)
+		return writeJson(w, http.StatusOK, message)
 
 	} else {
 

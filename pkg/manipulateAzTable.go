@@ -39,8 +39,7 @@ func (t Table) Get() ([]byte, error) {
 	pager := t.Client.NewListEntitiesPager(options)
 	pageCount := 0
 
-	var export string
-
+	var err error
 	for pager.More() {
 		response, err := pager.NextPage(context.TODO())
 		if err != nil {
@@ -61,13 +60,11 @@ func (t Table) Get() ([]byte, error) {
 				if err != nil {
 					fmt.Printf("Error: %s", err.Error())
 				}
-
-				export = fmt.Sprintln(string(jsonStr))
-
+				return jsonStr, nil
 			}
 		}
 	}
-	return export, nil
+	return nil, err
 }
 
 func (t Table) GetSingle() ([]byte, error) {
@@ -81,7 +78,7 @@ func (t Table) GetSingle() ([]byte, error) {
 	pager := t.Client.NewListEntitiesPager(options)
 	pageCount := 0
 
-	var export string
+	var err error
 
 	for pager.More() {
 		response, err := pager.NextPage(context.TODO())
@@ -109,13 +106,13 @@ func (t Table) GetSingle() ([]byte, error) {
 						if err != nil {
 							fmt.Printf("Error: %s", err.Error())
 						}
-						export = fmt.Sprintln(string(jsonStr))
+						return jsonStr, nil
 					}
 				}
 			}
 		}
 	}
-	return export, nil
+	return nil, err
 }
 
 func (t Table) GetStage() (string, error) {
@@ -277,8 +274,7 @@ func (t Table) Delete() (string, error) {
 		UpdateMode: "replace",
 	}
 
-	var res string
-	res, _ = t.Get()
+	res, _ := t.Get()
 
 	var jsonMap map[string]interface{}
 	json.Unmarshal([]byte(res), &jsonMap)
