@@ -27,8 +27,6 @@ type Table struct {
 	JSonString    string
 }
 
-var dateTime = time.Now().Format("02-01-2006 15:04:05")
-
 func (t Table) Get() ([]byte, error) {
 
 	filter := fmt.Sprintf("PartitionKey eq '%s'", t.PartitionKey)
@@ -347,9 +345,9 @@ func (t Table) GetConfig() ([]byte, error) {
 
 				jsonStruct.Status = "200"
 				jsonStruct.ErrorText = ""
-				jsonStruct.Meta.LastUpdate = dateTime
-				jsonStruct.Configurations.LuUpdate = dateTime
-				jsonStruct.Configurations.LuProcessed = dateTime
+				jsonStruct.Meta.LastUpdate = DateTime
+				jsonStruct.Configurations.LuUpdate = DateTime
+				jsonStruct.Configurations.LuProcessed = DateTime
 				jsonStruct.Configurations.Fields.Tier.SelectValues = []string{fmt.Sprint(myEntity.Properties["tierSelectValues"])}
 				jsonStruct.Configurations.Fields.Location.SelectValues = []string{fmt.Sprint(myEntity.Properties["locationSelectValues"])}
 				jsonStruct.Configurations.Fields.Usercount.SelectValues = []string{fmt.Sprint(myEntity.Properties["userCountSelectValues"])}

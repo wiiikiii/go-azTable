@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
+
+var DateTime = time.Now().Format("2006-01-02 15:04:05")
 
 func (t Table) ParseCli() {
 
