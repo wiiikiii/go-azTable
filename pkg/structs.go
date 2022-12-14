@@ -75,3 +75,15 @@ type Applications struct {
 	Values       []string `json:"values,omitempty"`
 	SelectValues []string `json:"selectValues,omitempty"`
 }
+
+type API_v1 struct {
+    Status       int                      `json:"status"`
+    ErrorText    string                   `json:"errorText"`
+    Meta         map[string]interface{}   `json:"meta"`
+    Configurations []map[string]interface{} `json:"configurations"`
+}
+
+type API_v2 struct {
+    Meta         map[string]interface{}   `json:"meta"`
+    Configurations []map[string]interface{} `json:"configurations"`
+}

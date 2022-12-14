@@ -174,3 +174,4 @@ func (t Table) GetValueFromMap(v string) (string, error) {
 	log.Fatal("error, value not found: ", err)
 	return "", err
 }
+

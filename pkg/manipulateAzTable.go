@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -214,24 +215,45 @@ func (t Table) Update() (string, error) {
 	return export, nil
 }
 
-func (t Table) UpdateJSON() (string, error) {
+func (t Table) UpdateJSON(api API_v2) (string, error) {
 
-	jsonMap := make(map[string]interface{})
-	err := json.Unmarshal([]byte(t.JSonString), &jsonMap)
+	res := make(map[string]string)
 
-	if err != nil {
-		panic(err)
+	for key, value := range api.Meta {
+		res[key] = fmt.Sprint(value)
 	}
 
-	var export string
-	r := make(map[string]string)
+	for _, config := range api.Configurations {
 
-	for key, value := range jsonMap {
+		var appslice = []string{}
+
+		fields := config["fields"].(map[string]interface{})
+		for key, value := range fields {
+			res[key] = fmt.Sprint(value)
+		}
+
+		applications := config["fields"].(map[string]interface{})["applications"].([]interface{})
+
+		var resp string
+		
+		for _, app := range applications {
+			a := `"` + fmt.Sprint(app) + `"`
+			appslice = append(appslice, a)
+			resp = strings.Join(appslice, ",")
+
+		}
+		q := `[` + fmt.Sprint(resp) + `]`
+		res["applications"] = q
+	}
+
+	res["lastUpdate"] = time.Now().Format(time.RFC3339)
+
+	for key, value := range res {
 
 		myAddEntity := aztables.EDMEntity{
 			Entity: aztables.Entity{
-				PartitionKey: t.PartitionKey,
-				RowKey:       t.RowKey,
+				PartitionKey: "AVD",
+				RowKey:       "NEW-CONFIG",
 			},
 			Properties: map[string]interface{}{
 				key: value,
@@ -251,21 +273,8 @@ func (t Table) UpdateJSON() (string, error) {
 		if err != nil {
 			return "", errors.New("couldn`t update or create value")
 		}
-
-		valStr := fmt.Sprint(value)
-
-		r[key] = string(valStr)
 	}
-
-	jsonStr, err := json.Marshal(r)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
-	}
-
-	export = fmt.Sprintln(string(jsonStr))
-
-	return export, nil
+	return "success", nil
 }
 
 func (t Table) Delete() (string, error) {

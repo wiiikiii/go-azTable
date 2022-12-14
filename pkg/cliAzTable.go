@@ -49,12 +49,6 @@ func (t Table) ParseCli() {
 	updatePropertyName := updateCmd.String("propertyName", "", "propertyName")
 	updatePropertyValue := updateCmd.String("propertyValue", "", "propertyValue")
 
-	// json
-	jsonCmd := flag.NewFlagSet("json", flag.ExitOnError)
-	jsonRowKey := jsonCmd.String("rowKey", "", "rowKey")
-	jsonPartitionKey := jsonCmd.String("partitionKey", "", "partitionKey")
-	jsonString := jsonCmd.String("jsonObject", "", "jsonObject")
-
 	// delete
 	deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 	deleteRowKey := deleteCmd.String("rowKey", "", "rowKey")
@@ -80,9 +74,8 @@ func (t Table) ParseCli() {
 		http.HandleFunc("/api/v1/table/getsingle", t.MakeHttpHandler(t.GetSingleHttpHandler))
 		http.HandleFunc("/api/v1/table/update", t.MakeHttpHandler(t.UpdateHttpHandler))
 		http.HandleFunc("/api/v1/table/delete", t.MakeHttpHandler(t.DeleteHttpHandler))
-		http.HandleFunc("/api/v1/table/updateJson", t.MakeHttpHandler(t.JSonUpdateHttpHandler))
-		http.HandleFunc("/api/v1/table/getJson", t.MakeHttpHandler(t.JSonGetHttpHandler))
 		http.HandleFunc("/api/v1/table/config", t.MakeHttpHandler(t.GetConfigHttpHandler))
+		http.HandleFunc("/api/v1/table/updateconfig", t.MakeHttpHandler(t.UpdateConfigHttpHandler))
 		log.Printf("Server started.\n")
 		log.Printf("About to listen on Port%s.\nGo to https://127.0.0.1%s/", listenAddr, listenAddr)
 		log.Fatal(http.ListenAndServe(listenAddr, nil))
@@ -149,21 +142,6 @@ func (t Table) ParseCli() {
 		}
 		fmt.Println(res)
 
-	case "json":
-
-		jsonCmd.Parse(os.Args[2:])
-		t.Function = "updateJson"
-		t.RowKey = *jsonRowKey
-		t.PartitionKey = *jsonPartitionKey
-		t.JSonString = *jsonString
-		t.Client, _ = t.Connect()
-
-		res, err := t.UpdateJSON()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(res)
-
 	case "delete":
 
 		deleteCmd.Parse(os.Args[2:])
@@ -183,7 +161,7 @@ func (t Table) ParseCli() {
 		if err != nil {
 			fmt.Printf("Error: %s", err.Error())
 		}
-		
+
 		fmt.Printf("%s", current)
 
 	default:

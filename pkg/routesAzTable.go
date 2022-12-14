@@ -56,30 +56,6 @@ func (t Table) GetHttpHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
-func (t Table) ConfigHttpHandler(w http.ResponseWriter, r *http.Request) error {
-
-	if r.Method == http.MethodGet {
-
-		t.Function = "config"
-		t.RowKey = "Config"
-		t.PartitionKey = "AVD"
-		t.TableName = "avdSelectValues"
-		t.Client, _ = t.Connect()
-
-		message, err := t.Get()
-		if err != nil {
-			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
-		}
-
-		return writeJson(w, http.StatusOK, message)
-
-	} else {
-
-		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
-
-	}
-}
-
 func (t Table) GetSingleHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodGet {
@@ -181,46 +157,6 @@ func (t Table) DeleteHttpHandler(w http.ResponseWriter, r *http.Request) error {
 	return writeJson(w, http.StatusOK, "ok")
 }
 
-func (t Table) JSonGetHttpHandler(w http.ResponseWriter, r *http.Request) error {
-
-	var err error
-
-	if r.Method == http.MethodGet {
-
-	} else {
-		return writeJson(w, http.StatusBadRequest, "not supported method")
-	}
-	return err
-}
-
-func (t Table) JSonUpdateHttpHandler(w http.ResponseWriter, r *http.Request) error {
-
-	if r.Method == http.MethodPost {
-
-		r.ParseForm()
-
-		data := struct {
-			Method      string
-			URL         *url.URL
-			Submissions url.Values
-		}{
-			r.Method,
-			r.URL,
-			r.Form,
-		}
-
-		s := data.Submissions
-		t.PropertyName = fmt.Sprintln(string(s.Get("PropertyName")))
-
-		if reflect.ValueOf(t.PropertyName).IsValid() {
-			fmt.Print(w, "Here a delete property function should be implemented")
-		} else {
-			http.Error(w, "not enough parameters.", http.StatusBadRequest)
-		}
-	}
-	return nil
-}
-
 func (t Table) GetConfigHttpHandler(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == http.MethodGet {
@@ -240,4 +176,23 @@ func (t Table) GetConfigHttpHandler(w http.ResponseWriter, r *http.Request) erro
 		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
 	}
 	return nil
+}
+
+func (t Table) UpdateConfigHttpHandler(w http.ResponseWriter, r *http.Request) error {
+
+	if r.Method == http.MethodPost {
+
+		var api API_v2
+		json.NewDecoder(r.Body).Decode(&api)
+
+		e, err := t.UpdateJSON(api)
+		if err != nil {
+			return apiError{Err: "couldnt get value", Status: http.StatusBadRequest}
+		}
+		
+		return writeJson(w, http.StatusOK, e)
+
+	} else {
+		return apiError{Err: "invalid method", Status: http.StatusMethodNotAllowed}
+	}
 }
